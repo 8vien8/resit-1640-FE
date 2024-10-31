@@ -1,31 +1,32 @@
 import { useState, useEffect } from 'react';
 import {
-    TextField, Button, Box, FormControl, InputLabel, Select, MenuItem,
-    CircularProgress, Typography, Snackbar, Alert
+    TextField, Button, Box, Typography, Snackbar, Alert
 } from '@mui/material';
 import useUserService from '../../../services/userManagementService';
 import useFacultyService from '../../../services/facultiesService';
 import useRoleService from '../../../services/rolesService';
 import PropTypes from 'prop-types';
-import { CloudUpload } from '@mui/icons-material';
+import { AvatarUpload, SelectField } from './formUtils';
 
 const CreateUserForm = ({ onCreatedUser }) => {
     const userService = useUserService();
     const facultiesService = useFacultyService();
     const roleService = useRoleService();
 
-    const [username, setUsername] = useState('');
-    const [email, setEmail] = useState('');
-    const [roleID, setRoleID] = useState('');
-    const [facultyID, setFacultyID] = useState('');
-    const [avatar, setAvatar] = useState(null);
+    const [formData, setFormData] = useState({
+        username: '',
+        email: '',
+        roleID: '',
+        facultyID: '',
+        avatar: null,
+    });
     const [avatarPreview, setAvatarPreview] = useState('');
     const [loading, setLoading] = useState(false);
     const [roles, setRoles] = useState([]);
     const [faculties, setFaculties] = useState([]);
     const [fetchingData, setFetchingData] = useState(true);
-    const [dataFetched, setDataFetched] = useState(false);
     const [showError, setShowError] = useState(false);
+    const [dataFetched, setDataFetched] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -48,27 +49,17 @@ const CreateUserForm = ({ onCreatedUser }) => {
 
     const handleCreate = async (e) => {
         e.preventDefault();
-
-        // Check if all fields are filled
-        if (!username || !email || !roleID || !facultyID || !avatar) {
-            setShowError(true); // Show Snackbar if fields are missing
+        if (Object.values(formData).some(value => !value)) {
+            setShowError(true);
             return;
         }
-
         setLoading(true);
-        const formData = new FormData();
-        formData.append('username', username);
-        formData.append('email', email);
-        formData.append('roleID', roleID);
-        formData.append('facultyID', facultyID);
-
-        if (avatar) {
-            formData.append('avatar', avatar);
-        }
+        const data = new FormData();
+        Object.keys(formData).forEach(key => data.append(key, formData[key]));
 
         try {
-            await userService.createUser(formData);
-            onCreatedUser(); // Callback to refresh user list
+            await userService.createUser(data);
+            onCreatedUser();
         } catch (error) {
             console.error('Error creating user:', error);
         } finally {
@@ -76,66 +67,36 @@ const CreateUserForm = ({ onCreatedUser }) => {
         }
     };
 
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
     const handleAvatarChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            setAvatar(file);
+            setFormData(prev => ({ ...prev, avatar: file }));
             setAvatarPreview(URL.createObjectURL(file));
         }
     };
 
     return (
         <Box component="form" onSubmit={handleCreate} sx={{ mt: 2 }}>
-            <Typography variant="h4" align="center" gutterBottom>
-                Create New User
-            </Typography>
+            <Typography variant="h4" align="center" gutterBottom>Create New User</Typography>
 
-            <FormControl disabled={loading} fullWidth sx={{ mb: 2, display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
-                {avatarPreview && (
-                    <img
-                        src={avatarPreview}
-                        alt="Avatar Preview"
-                        style={{
-                            width: 90,
-                            height: 90,
-                            borderRadius: '50%',
-                            objectFit: 'cover',
-                            marginBottom: 10,
-                        }}
-                    />
-                )}
-                <Button
-                    disabled={loading}
-                    variant="contained"
-                    color="primary"
-                    component="label"
-                    startIcon={<CloudUpload />}
-                    sx={{
-                        textTransform: 'none',
-                        padding: '6px 10px',
-                        fontSize: '0.9rem',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                    }}
-                >
-                    Choose an Avatar
-                    <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleAvatarChange}
-                        style={{ display: 'none' }}
-                    />
-                </Button>
-            </FormControl>
-
+            <AvatarUpload
+                disabled={loading}
+                avatarPreview={avatarPreview}
+                onAvatarChange={handleAvatarChange}
+            />
             <TextField
                 disabled={loading}
                 label="Username"
                 variant="outlined"
                 fullWidth
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                name="username"
+                value={formData.username}
+                onChange={handleInputChange}
                 required
                 sx={{ mb: 2 }}
             />
@@ -144,71 +105,39 @@ const CreateUserForm = ({ onCreatedUser }) => {
                 label="Email"
                 variant="outlined"
                 fullWidth
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
                 required
                 sx={{ mb: 2 }}
             />
-            <FormControl disabled={loading} fullWidth required sx={{ mb: 2 }}>
-                <InputLabel>Role</InputLabel>
-                <Select
-                    value={roleID}
-                    onChange={(e) => setRoleID(e.target.value)}
-                >
-                    {fetchingData ? (
-                        <MenuItem disabled>
-                            <CircularProgress size={24} />
-                        </MenuItem>
-                    ) : (
-                        roles
-                            .filter((role) => role.roleName !== 'Admin')
-                            .map((role) => (
-                                <MenuItem key={role._id} value={role._id} sx={{
-                                    "&:hover": {
-                                        fontWeight: "bold",
-                                    },
-                                }}>
-                                    {role.roleName}
-                                </MenuItem>
-                            ))
-                    )}
-                </Select>
-            </FormControl>
 
-            <FormControl disabled={loading} fullWidth required sx={{ mb: 2 }}>
-                <InputLabel>Faculty</InputLabel>
-                <Select
-                    value={facultyID}
-                    onChange={(e) => setFacultyID(e.target.value)}
-                >
-                    {fetchingData ? (
-                        <MenuItem disabled>
-                            <CircularProgress size={24} />
-                        </MenuItem>
-                    ) : (
-                        faculties.map((faculty) => (
-                            <MenuItem key={faculty._id} value={faculty._id} sx={{
-                                "&:hover": {
-                                    fontWeight: "bold",
-                                },
-                            }}>
-                                {faculty.facultyName}
-                            </MenuItem>
-                        ))
-                    )}
-                </Select>
-            </FormControl>
+            <SelectField
+                disabled={loading}
+                label="Role"
+                value={formData.roleID}
+                onChange={(e) => setFormData(prev => ({ ...prev, roleID: e.target.value }))}
+                options={roles.filter(role => role.roleName !== 'Admin')}
+                fetchingData={fetchingData}
+            />
+            <SelectField
+                disabled={loading}
+                label="Faculty"
+                value={formData.facultyID}
+                onChange={(e) => setFormData(prev => ({ ...prev, facultyID: e.target.value }))}
+                options={faculties}
+                fetchingData={fetchingData}
+            />
 
             <Button fullWidth variant="contained" color="primary" type="submit" disabled={loading}>
                 {loading ? 'Creating...' : 'Create User'}
             </Button>
 
-            {/* Snackbar for error display */}
             <Snackbar
                 open={showError}
                 autoHideDuration={3000}
                 onClose={() => setShowError(false)}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}  // Adjusted to bottom-left
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
             >
                 <Alert severity="error" onClose={() => setShowError(false)}>
                     Please fill out all required fields.

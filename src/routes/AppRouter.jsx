@@ -70,7 +70,6 @@ const AppRouter = () => {
                         <Route path="users" element={<UserManagement />} />
                         {/* <Route path="create-users" element={<CreateUser />} /> */}
                         <Route path="profile" element={<Profile />} />
-                        {/* <Route path="settings" element={<SystemSettings />} /> */}
                     </Route>
                 </Route>
 
