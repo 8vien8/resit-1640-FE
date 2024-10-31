@@ -1,58 +1,12 @@
 import { useState, useEffect } from 'react';
-import { TextField, Button, Box, FormControl, InputLabel, Select, MenuItem, CircularProgress, Typography } from '@mui/material';
+import { TextField, Button, Box, Typography } from '@mui/material';
 import useUserService from '../../../services/userManagementService';
 import useFacultyService from '../../../services/facultiesService';
 import useRoleService from '../../../services/rolesService';
 import PropTypes from 'prop-types';
-import { CloudUpload } from '@mui/icons-material';
+import { AvatarUpload, SelectField } from './formUtils';
 
-const AvatarUpload = ({ avatarPreview, onAvatarChange }) => (
-    <FormControl fullWidth required sx={{ mb: 2, display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
-        {avatarPreview && (
-            <img
-                src={avatarPreview}
-                alt="Avatar Preview"
-                style={{ width: 90, height: 90, borderRadius: '50%', objectFit: 'cover', marginBottom: 10 }}
-            />
-        )}
-        <Button
-            variant="contained"
-            color="primary"
-            component="label"
-            sx={{ textTransform: 'none', padding: '6px 10px', fontSize: '0.9rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
-            startIcon={<CloudUpload />}
-        >
-            Choose an Avatar
-            <input
-                type="file"
-                accept="image/*"
-                onChange={onAvatarChange}
-                style={{ display: 'none' }}
-            />
-        </Button>
-    </FormControl>
-);
-
-const SelectField = ({ label, value, onChange, options, fetchingData }) => (
-    <FormControl fullWidth required sx={{ mb: 2 }}>
-        <InputLabel>{label}</InputLabel>
-        <Select value={value} onChange={onChange}>
-            {fetchingData ? (
-                <MenuItem disabled>
-                    <CircularProgress size={24} />
-                </MenuItem>
-            ) : (
-                options.map(option => (
-                    <MenuItem key={option._id} value={option._id} sx={{ "&:hover": { fontWeight: "bold" } }}>
-                        {option.roleName || option.facultyName}
-                    </MenuItem>
-                ))
-            )}
-        </Select>
-    </FormControl>
-);
-
-const UpdateUserForm = ({ user, onUserUpdated, onClose }) => {
+const UpdateUserForm = ({ user, onUserUpdated }) => {
     const userService = useUserService();
     const facultiesService = useFacultyService();
     const roleService = useRoleService();
@@ -73,7 +27,10 @@ const UpdateUserForm = ({ user, onUserUpdated, onClose }) => {
         const fetchData = async () => {
             if (!dataFetched) {
                 try {
-                    const [rolesData, facultiesData] = await Promise.all([roleService.getRoles(), facultiesService.getFaculties()]);
+                    const [rolesData, facultiesData] = await Promise.all([
+                        roleService.getRoles(),
+                        facultiesService.getFaculties()
+                    ]);
                     setRoles(rolesData);
                     setFaculties(facultiesData);
 
@@ -115,7 +72,6 @@ const UpdateUserForm = ({ user, onUserUpdated, onClose }) => {
         try {
             await userService.updateUser(user._id, formData);
             onUserUpdated();
-            onClose();
         } catch (error) {
             console.error('Error updating user:', error);
         } finally {
@@ -136,8 +92,13 @@ const UpdateUserForm = ({ user, onUserUpdated, onClose }) => {
             <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="h4" component="h4">Update User Profile</Typography>
             </Box>
-            <AvatarUpload avatarPreview={avatarPreview} onAvatarChange={handleAvatarChange} />
+            <AvatarUpload
+                disabled={loading}
+                avatarPreview={avatarPreview}
+                onAvatarChange={handleAvatarChange}
+            />
             <TextField
+                disabled={loading}
                 label="Username"
                 variant="outlined"
                 fullWidth
@@ -147,6 +108,7 @@ const UpdateUserForm = ({ user, onUserUpdated, onClose }) => {
                 sx={{ mb: 2 }}
             />
             <TextField
+                disabled={loading}
                 label="Email"
                 variant="outlined"
                 fullWidth
@@ -156,6 +118,7 @@ const UpdateUserForm = ({ user, onUserUpdated, onClose }) => {
                 sx={{ mb: 2 }}
             />
             <SelectField
+                disabled={loading}
                 label="Role"
                 value={roleID}
                 onChange={(e) => setRoleID(e.target.value)}
@@ -163,6 +126,7 @@ const UpdateUserForm = ({ user, onUserUpdated, onClose }) => {
                 fetchingData={fetchingData}
             />
             <SelectField
+                disabled={loading}
                 label="Faculty"
                 value={facultyID}
                 onChange={(e) => setFacultyID(e.target.value)}
@@ -179,20 +143,6 @@ const UpdateUserForm = ({ user, onUserUpdated, onClose }) => {
 UpdateUserForm.propTypes = {
     user: PropTypes.object.isRequired,
     onUserUpdated: PropTypes.func.isRequired,
-    onClose: PropTypes.func.isRequired,
 };
-
-AvatarUpload.propTypes = {
-    avatarPreview: PropTypes.string,
-    onAvatarChange: PropTypes.func.isRequired,
-};
-
-SelectField.propTypes = {
-    label: PropTypes.string.isRequired,
-    value: PropTypes.string.isRequired,
-    onChange: PropTypes.func.isRequired,
-    options: PropTypes.arrayOf(PropTypes.object).isRequired,
-    fetchingData: PropTypes.bool.isRequired,
-}
 
 export default UpdateUserForm;

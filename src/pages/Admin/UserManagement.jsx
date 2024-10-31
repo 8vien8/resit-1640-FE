@@ -5,11 +5,12 @@ import useRoleService from '../../services/rolesService';
 import CreateUserForm from './user/createUserForm';
 import UpdateUserForm from './user/updateUserForm';
 import {
-    Table, TableBody, TableCell, TableHead, TableRow, Paper, TableContainer, Button, Modal,
-    TextField, Box, MenuItem, Select, FormControl, InputLabel, CircularProgress, Dialog, DialogTitle,
+    Button, Modal, Box, CircularProgress, Dialog, DialogTitle,
     DialogContent, DialogActions, DialogContentText, Snackbar
 } from '@mui/material';
 import MuiAlert from '@mui/material/Alert';
+import UserTable from './user/userTable';
+import FilterBar from './user/filterBar';
 
 const UserManagement = () => {
     const [users, setUsers] = useState([]);
@@ -126,59 +127,29 @@ const UserManagement = () => {
     return (
         <Box sx={{ padding: 2, overflowX: 'auto' }}>
             {/* Search and filter */}
-            <Box sx={{ display: 'flex', gap: 2, mb: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
-                <TextField
-                    label="Search by Username"
-                    variant="outlined"
-                    fullWidth
-                    value={searchTerm}
-                    onChange={handleSearchChange}
-                />
-                <FormControl fullWidth variant="outlined">
-                    <InputLabel>Filter by Role</InputLabel>
-                    <Select value={selectedRole} onChange={handleRoleFilterChange} label="Filter by Role">
-                        <MenuItem value=""><em>All Roles</em></MenuItem>
-                        {roles.map((role) => (
-                            <MenuItem key={role._id} value={role.roleName}>
-                                {role.roleName}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-                <FormControl fullWidth variant="outlined">
-                    <InputLabel>Filter by Faculty</InputLabel>
-                    <Select value={selectedFaculty} onChange={handleFacultyFilterChange} label="Filter by Faculty">
-                        <MenuItem value=""><em>All Faculties</em></MenuItem>
-                        {faculties.map((faculty) => (
-                            <MenuItem key={faculty._id} value={faculty.facultyName}>
-                                {faculty.facultyName}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-            </Box>
+            <FilterBar searchTerm={searchTerm}
+                handleSearchChange={handleSearchChange}
+                selectedRole={selectedRole}
+                handleRoleFilterChange={handleRoleFilterChange}
+                roles={roles}
+                selectedFaculty={selectedFaculty}
+                handleFacultyFilterChange={handleFacultyFilterChange}
+                faculties={faculties} />
+
             <Button sx={{ mb: 2 }} variant="contained" color="primary" onClick={() => setIsCreateUserModalOpen(true)}>
                 Create New User
             </Button>
-
             {/* Create User Modal */}
             <Modal
                 open={isCreateUserModalOpen}
                 onClose={() => setIsCreateUserModalOpen(false)}
                 sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
             >
                 <Box
                     sx={{
-                        p: 4,
-                        bgcolor: 'background.paper',
-                        width: '400px',
-                        maxHeight: '90%',
-                        overflowY: 'auto',
-                        borderRadius: 2,
+                        p: 4, bgcolor: 'background.paper', width: '400px', maxHeight: '90%', overflowY: 'auto', borderRadius: 2,
                     }}>
                     <CreateUserForm onCreatedUser={handleUserCreated} onClose={() => setIsCreateUserModalOpen(false)} />
                 </Box>
@@ -189,19 +160,12 @@ const UserManagement = () => {
                 open={isUpdateUserModalOpen}
                 onClose={() => setIsUpdateUserModalOpen(false)}
                 sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
             >
                 <Box
                     sx={{
-                        p: 4,
-                        bgcolor: 'background.paper',
-                        width: '400px',
-                        maxHeight: '90%',
-                        overflowY: 'auto',
-                        borderRadius: 2,
+                        p: 4, bgcolor: 'background.paper', width: '400px', maxHeight: '90%', overflowY: 'auto', borderRadius: 2,
                     }}
                 >
                     {userToUpdate && (
@@ -221,50 +185,10 @@ const UserManagement = () => {
                 </Box>
             ) : (
                 // User table
-                <TableContainer component={Paper} sx={{ overflowX: 'auto' }}>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell sx={{ fontSize: '1.1rem', width: '8%', }}>Avatar</TableCell>
-                                <TableCell sx={{ fontSize: '1.1rem', width: '19%', }}>Username</TableCell>
-                                <TableCell sx={{ fontSize: '1.1rem', width: '15%', }}>Email</TableCell>
-                                <TableCell sx={{ fontSize: '1.1rem', width: '15%', }}>Role</TableCell>
-                                <TableCell sx={{ fontSize: '1.1rem', width: '15%', }}>Faculty</TableCell>
-                                <TableCell sx={{ fontSize: '1.1rem', width: '14%', }}>Actions</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {filteredUsers.map((user) => (
-                                <TableRow key={user._id}>
-                                    <TableCell>
-                                        <img src={user.avatar} alt="User Avatar" width={40} height={40} />
-                                    </TableCell>
-                                    <TableCell>{user.username}</TableCell>
-                                    <TableCell>{user.email}</TableCell>
-                                    <TableCell>{user.roleID?.roleName}</TableCell>
-                                    <TableCell>{user.facultyID?.facultyName}</TableCell>
-                                    <TableCell>
-                                        {user.roleID?.roleName !== 'Admin' && (
-                                            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-                                                <Button
-                                                    variant="outlined" color="primary" onClick={() => openUpdateUserModal(user)} // Open update modal
-                                                >
-                                                    Update
-                                                </Button>
-                                                <Button
-                                                    variant="outlined" color="error" onClick={() => openDeleteConfirmation(user)}
-                                                >
-                                                    Delete
-                                                </Button>
-                                            </Box>
-                                        )}
-                                    </TableCell>
-
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+                <UserTable
+                    filteredUsers={filteredUsers}
+                    openUpdateUserModal={openUpdateUserModal}
+                    openDeleteConfirmation={openDeleteConfirmation} />
             )}
 
             {/* Delete Confirmation Dialog */}
