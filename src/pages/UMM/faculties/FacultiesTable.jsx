@@ -5,7 +5,7 @@ import {
     DialogContent, DialogTitle, Typography
 } from '@mui/material';
 
-const FacultyTable = ({ faculties, setSelectedFaculty, setEditingFaculty, openConfirmDeleteDialog }) => (
+const FacultyTable = ({ faculties, onViewFaculty, setEditingFaculty, openConfirmDeleteDialog }) => (
     <TableContainer component={Paper} style={{ marginTop: '1em' }}>
         <Table>
             <TableHead>
@@ -19,7 +19,7 @@ const FacultyTable = ({ faculties, setSelectedFaculty, setEditingFaculty, openCo
                     <TableRow key={faculty._id}>
                         <TableCell>{faculty.facultyName}</TableCell>
                         <TableCell sx={{ display: 'flex', gap: 1 }}>
-                            <Button variant="contained" color="primary" onClick={() => setSelectedFaculty(faculty)}>View</Button>
+                            <Button variant="contained" color="primary" onClick={() => onViewFaculty(faculty)}>View</Button>
                             <Button variant="contained" color="secondary" onClick={() => setEditingFaculty(faculty)}>Edit</Button>
                             <Button variant="outlined" color="error" onClick={() => openConfirmDeleteDialog(faculty)}>Delete</Button>
                         </TableCell>
@@ -32,10 +32,10 @@ const FacultyTable = ({ faculties, setSelectedFaculty, setEditingFaculty, openCo
 
 FacultyTable.propTypes = {
     faculties: PropTypes.arrayOf(PropTypes.object).isRequired,
-    setSelectedFaculty: PropTypes.func.isRequired,
+    onViewFaculty: PropTypes.func.isRequired, // Changed this to onViewFaculty
     setEditingFaculty: PropTypes.func.isRequired,
     openConfirmDeleteDialog: PropTypes.func.isRequired,
-}
+};
 
 const ConfirmDeleteDialog = ({ open, onClose, onDelete, facultyToDelete }) => (
     <Dialog open={open} onClose={onClose}>
@@ -57,7 +57,7 @@ ConfirmDeleteDialog.propTypes = {
     onClose: PropTypes.func.isRequired,
     onDelete: PropTypes.func.isRequired,
     facultyToDelete: PropTypes.object,
-}
+};
 
 export {
     FacultyTable,

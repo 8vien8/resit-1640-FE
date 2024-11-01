@@ -40,6 +40,7 @@ import UMMLayout from '../pages/UMM/UMMLayout';
 // import CreateUser from '../pages/Admin/CreateUser';
 import Profile from '../pages/public/Profile';
 import FacultiesManagement from '../pages/UMM/faculties/FacultiesManagement';
+import FacultyDetailView from '../pages/UMM/faculties/FacultyDetail';
 
 const AppRouter = () => {
     const ROLE_IDS = {
@@ -78,6 +79,7 @@ const AppRouter = () => {
                     <Route path="/umm" element={<UMMLayout />}>
                         <Route index element={<UMMDashboard />} />
                         <Route path="faculties" element={<FacultiesManagement />} />
+                        <Route path="faculty/:facultyId/:facultyName" element={<FacultyDetailView />} />
                         <Route path="profile" element={<Profile />} />
                         <Route path="downloads" element={<DownloadContributions />} />
                     </Route>

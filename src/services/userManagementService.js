@@ -1,21 +1,20 @@
 import axios from 'axios';
 import { useContext } from 'react';
-import { UserContext } from '../context/UserContext'; // Điều chỉnh đường dẫn nếu cần
+import { UserContext } from '../context/UserContext';
 
 const API_URL = 'http://localhost:5000/api/users';
 
 const useUserService = () => {
-    const { token } = useContext(UserContext); // Lấy token từ UserContext
+    const { token } = useContext(UserContext);
 
-    // Hàm để lấy tất cả người dùng
     const getUsers = async () => {
         try {
             const response = await axios.get(API_URL, {
                 headers: {
-                    Authorization: `Bearer ${token}`, // Gửi token để xác thực
+                    Authorization: `Bearer ${token}`,
                 },
             });
-            return response.data; // Trả về dữ liệu người dùng từ API
+            return response.data;
         } catch (error) {
             console.error('Error fetching users:', error.response?.data || error.message);
             throw error;
@@ -26,11 +25,11 @@ const useUserService = () => {
         try {
             const response = await axios.post(API_URL, formData, {
                 headers: {
-                    Authorization: `Bearer ${token}`, // Gửi token để xác thực
+                    Authorization: `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            return response.data; // Trả về dữ liệu người dùng tạo từ API
+            return response.data;
         } catch (error) {
             console.error('Error creating user:', error.response?.data || error.message);
             throw error;
@@ -41,10 +40,10 @@ const useUserService = () => {
         try {
             const response = await axios.delete(`${API_URL}/${userId}`, {
                 headers: {
-                    Authorization: `Bearer ${token}`, // Gửi token để xác thực
+                    Authorization: `Bearer ${token}`,
                 },
             });
-            return response.data; // Trả về dữ liệu người dùng xóa từ API
+            return response.data;
         } catch (error) {
             console.error('Error deleting user:', error.response?.data || error.message);
             throw error;
@@ -55,11 +54,11 @@ const useUserService = () => {
         try {
             const response = await axios.put(`${API_URL}/${userId}`, formData, {
                 headers: {
-                    Authorization: `Bearer ${token}`, // Gửi token để xác thực
+                    Authorization: `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            return response.data; // Trả về dữ liệu người dùng cập nhật từ API
+            return response.data;
         } catch (error) {
             console.error('Error updating user:', error.response?.data || error.message);
             throw error;
@@ -95,9 +94,9 @@ const useUserService = () => {
         }
     }
 
-    const getUsersByFaculty = async (facultyID) => {
+    const getUsersByFaculty = async (facultyId) => {
         try {
-            const response = await axios.get(`${API_URL}/role/${facultyID}`, {
+            const response = await axios.get(`${API_URL}/faculty/${facultyId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },

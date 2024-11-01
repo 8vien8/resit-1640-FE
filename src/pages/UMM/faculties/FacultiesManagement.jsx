@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import useFacultyService from '../../../services/facultiesService';
 import {
     Container, Typography, TextField, Button, Snackbar, Alert, Dialog, DialogActions, DialogContent, DialogTitle
@@ -9,13 +10,13 @@ const FacultiesManagement = () => {
     const [hasFetchedData, setHasFetchedData] = useState(false);
     const [facultyName, setFacultyName] = useState('');
     const [faculties, setFaculties] = useState([]);
-    const [selectedFaculty, setSelectedFaculty] = useState(null);
     const [editingFaculty, setEditingFaculty] = useState(null);
     const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] = useState(false);
     const [facultyToDelete, setFacultyToDelete] = useState(null);
     const [error, setError] = useState(null);
     const [successMessage, setSuccessMessage] = useState('');
     const facultyService = useFacultyService();
+    const navigate = useNavigate();
 
     const fetchData = useCallback(async () => {
         try {
@@ -77,11 +78,15 @@ const FacultiesManagement = () => {
         setConfirmDeleteDialogOpen(true);
     };
 
+    const handleViewFaculty = (faculty) => {
+        const encodedFacultyName = encodeURIComponent(faculty.facultyName);
+        navigate(`/umm/faculty/${faculty._id}/${encodedFacultyName}`);
+    }
+
     const resetCreateForm = () => {
         setFacultyName('');
         setError(null);
     };
-
     return (
         <Container>
             <Typography variant="h4" gutterBottom>Faculties Management</Typography>
@@ -106,22 +111,10 @@ const FacultiesManagement = () => {
 
             <FacultyTable
                 faculties={faculties}
-                setSelectedFaculty={setSelectedFaculty}
                 setEditingFaculty={setEditingFaculty}
                 openConfirmDeleteDialog={openConfirmDeleteDialog}
+                onViewFaculty={handleViewFaculty}
             />
-
-            {selectedFaculty && (
-                <Dialog open={Boolean(selectedFaculty)} onClose={() => setSelectedFaculty(null)}>
-                    <DialogTitle>Faculty Details</DialogTitle>
-                    <DialogContent>
-                        <Typography>Name: {selectedFaculty.facultyName}</Typography>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={() => setSelectedFaculty(null)} color="primary">Close</Button>
-                    </DialogActions>
-                </Dialog>
-            )}
 
             {editingFaculty && (
                 <Dialog open={Boolean(editingFaculty)} onClose={() => setEditingFaculty(null)}>

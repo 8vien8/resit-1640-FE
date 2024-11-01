@@ -76,12 +76,27 @@ const useTopicService = () => {
         }
     }
 
+    const getTopicByFacultyId = async (facultyId) => {
+        try {
+            const response = await axios.get(`${API_URL}/faculty/${facultyId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching topics by facultyId:", error.message);
+            return [];
+        }
+    }
+
     return {
         getTopics,
         getTopicById,
         createTopic,
         updateTopic,
-        deleteTopic
+        deleteTopic,
+        getTopicByFacultyId
     };
 
 }
