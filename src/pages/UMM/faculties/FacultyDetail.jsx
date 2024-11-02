@@ -1,10 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import {
-    Container,
-    Typography,
-    CircularProgress,
-    Alert,
+    Container, Typography, CircularProgress, Alert,
 } from '@mui/material';
 import useTopicService from '../../../services/topicService';
 import useUserService from '../../../services/userManagementService';
@@ -22,26 +19,29 @@ const FacultyDetailView = () => {
     const [error, setError] = useState(null);
     const [hasFetchedData, setHasFetchedData] = useState(false);
 
+    const fetchData = useCallback(async () => {
+        try {
+            const [userData, topicData] = await Promise.all([
+                userService.getUsersByFaculty(facultyId),
+                topicService.getTopicByFacultyId(facultyId)
+            ]);
+            setUsers(userData);
+            setTopics(topicData);
+            setHasFetchedData(true);
+        } catch (err) {
+            setError('Error fetching faculty details. Please try again.');
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    }, [facultyId, topicService, userService]
+    )
+
     useEffect(() => {
-        const fetchData = async () => {
-            if (!hasFetchedData) {
-                try {
-                    const [userData, topicData] = await Promise.all([
-                        userService.getUsersByFaculty(facultyId),
-                        topicService.getTopicByFacultyId(facultyId)
-                    ]);
-                    setUsers(userData);
-                    setTopics(topicData);
-                    setHasFetchedData(true);
-                } catch (err) {
-                    setError('Error fetching faculty details. Please try again.', err);
-                } finally {
-                    setLoading(false);
-                }
-            }
-        };
-        fetchData();
-    }, [facultyId, topicService, userService, hasFetchedData]);
+        if (!hasFetchedData) {
+            fetchData();
+        }
+    }, [fetchData, hasFetchedData])
 
     return (
         <Container>
@@ -53,9 +53,9 @@ const FacultyDetailView = () => {
             ) : (
                 <>
                     <Typography variant="h6" style={{ marginTop: '1em' }}>Topics</Typography>
-                    <TopicsTable topics={topics} /> {/* Use TopicsTable component */}
+                    <TopicsTable topics={topics} facultyId={facultyId} onChangeData={fetchData} />
 
-                    <Typography variant="h6" style={{ marginTop: '1em' }}>Users:</Typography>
+                    <Typography variant="h6" style={{ marginTop: '1em' }}>Users</Typography>
                     <UsersTable users={users} /> {/* Use UsersTable component */}
                 </>
             )}

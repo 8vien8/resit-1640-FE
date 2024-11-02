@@ -4,7 +4,6 @@ import RoleBasedRedirect from '../components/RoleBasedRedirect';
 
 // Common pages
 
-
 // Admin pages
 import AdminDashboard from '../pages/Admin/AdminDashboard';
 import UserManagement from '../pages/Admin/UserManagement';
@@ -41,6 +40,7 @@ import UMMLayout from '../pages/UMM/UMMLayout';
 import Profile from '../pages/public/Profile';
 import FacultiesManagement from '../pages/UMM/faculties/FacultiesManagement';
 import FacultyDetailView from '../pages/UMM/faculties/FacultyDetail';
+import ContributionsInFaculty from '../pages/UMM/faculties/contributions/contributions';
 
 const AppRouter = () => {
     const ROLE_IDS = {
@@ -80,6 +80,7 @@ const AppRouter = () => {
                         <Route index element={<UMMDashboard />} />
                         <Route path="faculties" element={<FacultiesManagement />} />
                         <Route path="faculty/:facultyId/:facultyName" element={<FacultyDetailView />} />
+                        <Route path="topic/:topicId/contributions" element={<ContributionsInFaculty />} />
                         <Route path="profile" element={<Profile />} />
                         <Route path="downloads" element={<DownloadContributions />} />
                     </Route>
