@@ -82,7 +82,7 @@ const TopicsTable = ({ topics, facultyId, onChangeData }) => {
             } else {
                 await topicService.createTopic(formData);
             }
-            onChangeData(); // Refresh data after create/update
+            onChangeData();
             handleClose();
         } catch (error) {
             console.error('Error saving topic:', error);
@@ -98,7 +98,7 @@ const TopicsTable = ({ topics, facultyId, onChangeData }) => {
     const handleConfirmDelete = async () => {
         try {
             await topicService.deleteTopic(topicToDelete);
-            onChangeData(); // Refresh data after deletion
+            onChangeData();
         } catch (error) {
             console.error('Error deleting topic:', error);
         } finally {
@@ -107,8 +107,9 @@ const TopicsTable = ({ topics, facultyId, onChangeData }) => {
         }
     };
 
-    const handleView = (topicId) => {
-        navigate(`/umm/topic/${topicId}/contributions`);
+    const handleView = (topic) => {
+        const topicName = encodeURIComponent(topic.topicName);
+        navigate(`/umm/topic/${topic._id}/${topicName}/contributions`);
     }
 
     const filterTopics = (topics) => {
@@ -168,40 +169,52 @@ const TopicsTable = ({ topics, facultyId, onChangeData }) => {
                     </TableHead>
                     <TableBody>
                         {filteredTopics.length > 0 ? (
-                            filteredTopics.map((topic) => {
-                                const today = new Date();
-                                const threeDaysFromNow = new Date(today);
-                                threeDaysFromNow.setDate(today.getDate() + 3);
-                                const isExpired = new Date(topic.endDate) < today;
-                                const isSoonToExpire = new Date(topic.endDate) <= threeDaysFromNow;
-                                return (
-                                    <TableRow
-                                        key={topic._id}
-                                        sx={{
-                                            backgroundColor: isExpired ? 'rgba(255, 0, 0, 0.2)' :
-                                                isSoonToExpire ? 'rgba(0, 128, 0, 0.2)' :
-                                                    'inherit'
-                                        }}
-                                    >
-                                        <TableCell>{topic.topicName}</TableCell>
-                                        <TableCell>
-                                            <strong>{new Date(topic.releaseDate).toLocaleDateString()}</strong>
-                                            {' at ' + new Date(topic.releaseDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </TableCell>
-                                        <TableCell>
-                                            <strong>{new Date(topic.endDate).toLocaleDateString()}</strong>
-                                            {' at ' + new Date(topic.endDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </TableCell>
-                                        <TableCell>
-                                            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
-                                                <Button variant="outlined" onClick={() => handleView(topic._id)}>View</Button>
-                                                <Button variant="outlined" onClick={() => handleClickOpen(topic)}>Edit</Button>
-                                                <Button variant="outlined" color="error" onClick={() => handleDelete(topic)}>Delete</Button>
-                                            </Box>
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })
+                            filteredTopics
+                                .map((topic) => {
+                                    const today = new Date();
+                                    const threeDaysFromNow = new Date(today);
+                                    threeDaysFromNow.setDate(today.getDate() + 3);
+                                    const isExpired = new Date(topic.endDate) < today;
+                                    const isSoonToExpire = new Date(topic.endDate) <= threeDaysFromNow;
+
+                                    return { ...topic, isExpired, isSoonToExpire };
+                                })
+                                .sort((a, b) => {
+                                    if (!a.isExpired && !a.isSoonToExpire && (b.isExpired || b.isSoonToExpire)) return -1;
+                                    if (!b.isExpired && !b.isSoonToExpire && (a.isExpired || a.isSoonToExpire)) return 1;
+                                    if (a.isSoonToExpire && b.isExpired) return -1;
+                                    if (a.isExpired && b.isSoonToExpire) return 1;
+                                    return 0;
+                                })
+                                .map((topic) => {
+                                    return (
+                                        <TableRow
+                                            key={topic._id}
+                                            sx={{
+                                                backgroundColor: topic.isExpired ? 'rgba(255, 0, 0, 0.2)' :
+                                                    topic.isSoonToExpire ? 'rgba(0, 128, 0, 0.2)' :
+                                                        'inherit'
+                                            }}
+                                        >
+                                            <TableCell>{topic.topicName}</TableCell>
+                                            <TableCell>
+                                                <strong>{new Date(topic.releaseDate).toLocaleDateString()}</strong>
+                                                {' at ' + new Date(topic.releaseDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </TableCell>
+                                            <TableCell>
+                                                <strong>{new Date(topic.endDate).toLocaleDateString()}</strong>
+                                                {' at ' + new Date(topic.endDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
+                                                    <Button variant="outlined" onClick={() => handleView(topic)}>View</Button>
+                                                    <Button variant="outlined" onClick={() => handleClickOpen(topic)}>Edit</Button>
+                                                    <Button variant="outlined" color="error" onClick={() => handleDelete(topic)}>Delete</Button>
+                                                </Box>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })
                         ) : (
                             <TableRow>
                                 <TableCell colSpan={4} align="center">No topics created in this faculty.</TableCell>

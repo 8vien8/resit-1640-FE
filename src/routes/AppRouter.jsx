@@ -80,7 +80,7 @@ const AppRouter = () => {
                         <Route index element={<UMMDashboard />} />
                         <Route path="faculties" element={<FacultiesManagement />} />
                         <Route path="faculty/:facultyId/:facultyName" element={<FacultyDetailView />} />
-                        <Route path="topic/:topicId/contributions" element={<ContributionsInFaculty />} />
+                        <Route path="topic/:topicId/:topicName/contributions" element={<ContributionsInFaculty />} />
                         <Route path="profile" element={<Profile />} />
                         <Route path="downloads" element={<DownloadContributions />} />
                     </Route>
