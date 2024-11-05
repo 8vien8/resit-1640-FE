@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useState, useCallback, useEffect } from "react";
 import useContributionService from "../../../../services/contributionsServices";
-import { Card, CardContent, Typography, Box, Container, List, ListItem, ListItemText, ListItemIcon, useTheme } from "@mui/material";
+import { Card, CardContent, Typography, Box, List, ListItem, ListItemText, ListItemIcon, useTheme } from "@mui/material";
 import pdfIcon from '../../../../assets/pdf.ico'
 import wordIcon from '../../../../assets/word.ico'
 import imageIcon from '../../../../assets/image.ico'
@@ -58,7 +58,7 @@ function ContributionsInFaculty() {
     };
 
     return (
-        <Container >
+        <Box >
             <Typography variant="h4" gutterBottom>
                 Contributions for Topic: {topicName}
             </Typography>
@@ -126,7 +126,7 @@ function ContributionsInFaculty() {
                     </Box>
                 ))}
             </Box>
-        </Container >
+        </Box >
     );
 }
 

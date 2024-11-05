@@ -23,11 +23,11 @@ const useContributionService = () => {
         }
     }
 
-    const createContribution = async (contribution) => {
+    const createContribution = async (formData) => {
         try {
-            const response = await axios.post(API_URL, contribution, {
+            const response = await axios.post(API_URL, formData, {
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'multipart/form-data',
                 }
             });
             return response.data;
@@ -70,6 +70,16 @@ const useContributionService = () => {
         }
     }
 
+    const getContributionForStudent = async (studentId, facultyId, topicId) => {
+        try {
+            const response = await axios.get(`${API_URL}/${studentId}/${facultyId}/${topicId}`);
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching contributions: ", error);
+            return [];
+        }
+    }
+
     return {
         getContributions,
         getContributionById,
@@ -77,6 +87,7 @@ const useContributionService = () => {
         updateContribution,
         deleteContribution,
         getContributionByTopicId,
+        getContributionForStudent
     }
 }
 
