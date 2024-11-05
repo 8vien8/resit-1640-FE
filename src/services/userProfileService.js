@@ -19,12 +19,12 @@ const getMe = async (token) => {
 };
 
 // Function to update user profile
-const updateProfile = async (token, userId, updatedData) => {
+const updateProfile = async (token, userId, formData) => {
     try {
-        const response = await axios.put(`${UPDATE_API_URL}/${userId}`, updatedData, {
+        const response = await axios.put(`${UPDATE_API_URL}/${userId}`, formData, {
             headers: {
-                Authorization: `Bearer ${token}`, // Gửi token để xác thực
-                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'multipart/form-data',
             },
         });
         return response.data; // Returns the updated user data
