@@ -41,7 +41,7 @@ const useContributionService = () => {
         try {
             const response = await axios.put(`${API_URL}/${contributionId}`, updatedContribution, {
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'multipart/form-data',
                 }
             });
             return response.data;
