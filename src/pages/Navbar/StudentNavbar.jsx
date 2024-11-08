@@ -13,12 +13,9 @@ import {
 } from '@mui/material';
 import {
     Dashboard,
-    // Settings,
     Menu,
     ChevronLeft,
-    // PersonAdd,
     AccountCircle,
-    Groups3,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
@@ -30,9 +27,6 @@ const drawerWidthCollapsed = 80;
 
 const navItems = [
     { label: 'Dashboard', icon: <Dashboard fontSize='large' />, path: '/student' },
-    { label: 'Create Submission', icon: <Groups3 fontSize='large' />, path: '/student/submit' },
-    // { label: 'Create User', icon: <PersonAdd fontSize='large' />, path: '/admin/create-users' },
-    // { label: 'System Settings', icon: <Settings fontSize='large' />, path: '/admin/settings' },
     { label: 'Profile', icon: <AccountCircle fontSize='large' />, path: '/student/profile' },
 ];
 

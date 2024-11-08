@@ -56,7 +56,8 @@ const StudentDashboard = () => {
 
     const handleView = (topic) => {
         const topicName = encodeURIComponent(topic.topicName);
-        navigate(`/student/topic/${topic._id}/${topicName}`);
+        const endDate = encodeURIComponent(topic.endDate);
+        navigate(`/student/topic/${topic._id}/${topicName}/${endDate}`);
     };
 
     const handleCreateSubmission = (topic) => {
@@ -139,7 +140,7 @@ const StudentDashboard = () => {
                             })
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={4} align="center">No topics created in this faculty.</TableCell>
+                                <TableCell colSpan={4} align="center">No topics found.</TableCell>
                             </TableRow>
                         )}
                     </TableBody>

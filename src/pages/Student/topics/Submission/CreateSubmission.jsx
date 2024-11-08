@@ -1,23 +1,31 @@
 import { useState, useContext } from 'react';
+import { useParams } from 'react-router-dom';
 import { UserContext } from '../../../../context/UserContext';
+import useContributionService from '../../../../services/contributionsServices';
+import wordIcon from '../../../../assets/word.ico';
+import imageIcon from '../../../../assets/image.ico';
+import defaultIcon from '../../../../assets/default.ico';
+import pdfIcon from '../../../../assets/pdf.ico';
 import {
     Container, TextField, Button, FormControlLabel, Checkbox, Box,
-    Typography, Paper, Snackbar, Alert
+    Typography, Paper, Snackbar, Alert, List, ListItem, ListItemIcon, ListItemText, IconButton
 } from '@mui/material';
-import { useParams } from 'react-router-dom';
-import useContributionService from '../../../../services/contributionsServices';
+import { UploadFile, Delete } from '@mui/icons-material';
 
+const iconStyles = { width: 50, height: 50 };
 const CreateSubmission = () => {
     const { topicId } = useParams();
     const { user } = useContext(UserContext);
     const userId = user._id;
     const facultyId = user.facultyID;
     const contributionService = useContributionService();
+    const statusID = '64f000000000000000000041';
 
     const [submissionData, setSubmissionData] = useState({
         userID: userId,
         facultyID: facultyId,
         topicID: topicId,
+        statusID: statusID,
         title: '',
         content: '',
         agreedToTnC: false,
@@ -51,6 +59,13 @@ const CreateSubmission = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        if (submissionData.files.length === 0) {
+            setSnackbarOpen(true);
+            setSnackbarMessage('Please upload at least one file.');
+            setSnackbarSeverity('warning');
+            return;
+        }
+
         const data = new FormData();
         for (const key in submissionData) {
             if (key !== 'files') {
@@ -80,6 +95,7 @@ const CreateSubmission = () => {
             userID: userId,
             facultyID: facultyId,
             topicID: topicId,
+            statusID: statusID,
             title: '',
             content: '',
             agreedToTnC: false,
@@ -87,9 +103,47 @@ const CreateSubmission = () => {
         });
     };
 
+    const getFileIcon = (fileType) => {
+        switch (fileType) {
+            case 'application/pdf':
+                return <img src={pdfIcon} alt="PDF icon" style={iconStyles} />;
+            case 'image/jpeg':
+            case 'image/png':
+                return <img src={imageIcon} alt="Image icon" style={iconStyles} />;
+            case 'application/msword':
+            case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+                return <img src={wordIcon} alt="Word icon" style={iconStyles} />;
+            default:
+                return <img src={defaultIcon} alt="Default icon" style={iconStyles} />;
+        }
+    };
+
+    const handleRemoveFile = (fileToRemove) => {
+        setSubmissionData(prevState => ({
+            ...prevState,
+            files: prevState.files.filter(file => file.name !== fileToRemove.name)
+        }));
+    };
+
+    const renderFileList = () => (
+        <List>
+            {submissionData.files.map((file, index) => (
+                <ListItem key={index}>
+                    <ListItemIcon>{getFileIcon(file.type)}</ListItemIcon>
+                    <ListItemText>
+                        {file.name}
+                    </ListItemText>
+                    <IconButton color='error' edge="end" onClick={() => handleRemoveFile(file)}>
+                        <Delete />
+                    </IconButton>
+                </ListItem>
+            ))}
+        </List>
+    );
+
     return (
-        <Container component={Paper} sx={{ padding: 3, marginTop: 3 }}>
-            <Typography variant="h5" gutterBottom>
+        <Container component={Paper} sx={{ padding: 3 }}>
+            <Typography variant="h5" gutterBottom align='center'>
                 Create Submission
             </Typography>
             <form onSubmit={handleSubmit}>
@@ -128,6 +182,7 @@ const CreateSubmission = () => {
                     variant="contained"
                     component="label"
                     sx={{ marginTop: 2 }}
+                    startIcon={<UploadFile />}
                 >
                     Upload Files
                     <input
@@ -139,10 +194,8 @@ const CreateSubmission = () => {
                         onChange={handleFileChange}
                     />
                 </Button>
-                <Box sx={{ marginTop: 2 }}>
-                    {submissionData.files.map((file, index) => (
-                        <Typography key={index} variant="body2">{file.name}</Typography>
-                    ))}
+                <Box style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                    {renderFileList()}
                 </Box>
                 <Button
                     type="submit"

@@ -42,7 +42,7 @@ import FacultiesManagement from '../pages/UMM/faculties/FacultiesManagement';
 import FacultyDetailView from '../pages/UMM/faculties/FacultyDetail';
 import ContributionsInFaculty from '../pages/UMM/faculties/contributions/Contributions';
 import TopicDetail from '../pages/Student/topics/topicDetail';
-import CreateSubmission from '../pages/Student/topics/Submission/createSubmission';
+import CreateSubmission from '../pages/Student/topics/Submission/CreateSubmission';
 
 const AppRouter = () => {
     const ROLE_IDS = {
@@ -101,16 +101,13 @@ const AppRouter = () => {
                 <Route element={<PrivateRoute allowedRoles={[ROLE_IDS.Student]} />}>
                     <Route path="/student" element={<StudentLayout />}>
                         <Route index element={<StudentDashboard />} />
-                        <Route path="topic/:topicId/:topicName" element={<TopicDetail />} />
+                        <Route path="topic/:topicId/:topicName/:endDate" element={<TopicDetail />} />
                         <Route path="topic/:topicId/:topicName/create-submission" element={<CreateSubmission />} />
                         <Route path="submit" element={<SubmitContribution />} />
                         <Route path="terms" element={<TermsAndConditions />} />
                         <Route path="profile" element={<Profile />} />
                     </Route>
                 </Route>
-
-
-
                 {/* Guest Routes */}
                 <Route element={<PrivateRoute allowedRoles={[ROLE_IDS.Guest]} />}>
                     <Route path="/guest" element={<GuestDashboard />} />
