@@ -11,8 +11,6 @@ import UserManagement from '../pages/Admin/UserManagement';
 
 // FMC pages
 import FMCDashboard from '../pages/FMC/FMCDashboard';
-import Contributions from '../pages/FMC/Contributions';
-import ContributionDetail from '../pages/FMC/ContributionDetail';
 
 // Guest pages
 import GuestDashboard from '../pages/Guest/GuestDashboard';
@@ -24,7 +22,6 @@ import TermsAndConditions from '../pages/Student/TermsAndConditions';
 
 // UMM pages
 import UMMDashboard from '../pages/UMM/UMMDashboard';
-import DownloadContributions from '../pages/UMM/DownloadContributions';
 import LandingPage from '../pages/public/LandingPage';
 import SignUpPage from '../pages/public/SignUpPage';
 import ForgotPasswordPage from '../pages/public/ForgotPasswordPage';
@@ -43,6 +40,8 @@ import FacultyDetailView from '../pages/UMM/faculties/FacultyDetail';
 import ContributionsInFaculty from '../pages/UMM/faculties/contributions/Contributions';
 import TopicDetail from '../pages/Student/topics/topicDetail';
 import CreateSubmission from '../pages/Student/topics/Submission/CreateSubmission';
+import ContributionsInTopic from '../pages/FMC/topic/ContributionsInTopic';
+// import FMCTopicDetail from '../pages/FMC/topic/TopicDetail';
 
 const AppRouter = () => {
     const ROLE_IDS = {
@@ -84,7 +83,6 @@ const AppRouter = () => {
                         <Route path="faculty/:facultyId/:facultyName" element={<FacultyDetailView />} />
                         <Route path="topic/:topicId/:topicName/contributions" element={<ContributionsInFaculty />} />
                         <Route path="profile" element={<Profile />} />
-                        <Route path="downloads" element={<DownloadContributions />} />
                     </Route>
                 </Route>
 
@@ -92,8 +90,8 @@ const AppRouter = () => {
                 <Route element={<PrivateRoute allowedRoles={[ROLE_IDS.FMC]} />}>
                     <Route path="/fmc" element={<FMCLayout />}>
                         <Route index element={<FMCDashboard />} />
-                        <Route path="contributions" element={<Contributions />} />
-                        <Route path="contributions/:id" element={<ContributionDetail />} />
+                        <Route path="topic/:topicId/:topicName/:endDate" element={<ContributionsInTopic />} />
+                        <Route path="profile" element={<Profile />} />
                     </Route>
                 </Route>
 

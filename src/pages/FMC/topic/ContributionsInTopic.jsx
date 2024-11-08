@@ -1,7 +1,6 @@
-import { useState, useEffect, useCallback, useContext } from "react";
+import { useState, useEffect, useCallback, } from "react";
 import { useParams } from "react-router-dom";
 import useContributionService from "../../../services/contributionsServices";
-import { UserContext } from "../../../context/UserContext";
 import {
     Table, TableBody, TableCell, TableContainer, TableHead,
     TableRow, Paper, Typography, List, ListItem,
@@ -12,15 +11,12 @@ import wordIcon from '../../../assets/word.ico';
 import imageIcon from '../../../assets/image.ico';
 import defaultIcon from '../../../assets/default.ico';
 import pdfIcon from '../../../assets/pdf.ico';
-import UpdateSubmission from "./Submission/UpdateSubmission";
+import UpdateContribution from "./submission/UpdateContribution";
 
 const TopicDetail = () => {
     const { topicId, topicName, endDate } = useParams();
     const [contributions, setContributions] = useState([]);
     const contributionsService = useContributionService();
-    const { user } = useContext(UserContext);
-    const studentId = user._id;
-    const facultyId = user.facultyID;
 
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
@@ -35,7 +31,7 @@ const TopicDetail = () => {
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await contributionsService.getContributionForStudent(studentId, facultyId, topicId);
+            const data = await contributionsService.getContributionByTopicId(topicId);
             setContributions(data);
         } catch (error) {
             console.error("Error fetching contributions: ", error);
@@ -43,7 +39,7 @@ const TopicDetail = () => {
         } finally {
             setLoading(false);
         }
-    }, [contributionsService, facultyId, studentId, topicId]);
+    }, [contributionsService, topicId]);
 
     useEffect(() => {
         if (!hasFetchedData) {
@@ -65,7 +61,7 @@ const TopicDetail = () => {
     const handleUpdate = async ({ id, data }) => {
         try {
             await contributionsService.updateContribution(id, data);
-            await fetchData();
+            fetchData();
             handleClose();
             setSnackbarState({ open: true, message: 'Contribution updated successfully.', severity: 'success' });
         } catch (error) {
@@ -146,13 +142,13 @@ const TopicDetail = () => {
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell sx={{ width: '20%' }}><strong>Title</strong></TableCell>
-                                <TableCell sx={{ width: '30%' }}><strong>Content</strong></TableCell>
-                                <TableCell sx={{ width: '15%' }}><strong>Submission Date</strong></TableCell>
-                                <TableCell sx={{ width: '20%' }}><strong>Files</strong></TableCell>
-                                <TableCell sx={{ width: '10%' }}><strong>Feedback</strong></TableCell>
-                                <TableCell sx={{ width: '5%' }}><strong>Status</strong></TableCell>
-                                <TableCell sx={{ width: '5%' }}><strong>Action</strong></TableCell>
+                                <TableCell style={{ width: '20%' }}><strong>Title</strong></TableCell>
+                                <TableCell style={{ width: '30%' }}><strong>Content</strong></TableCell>
+                                <TableCell style={{ width: '15%' }}><strong>Submission Date</strong></TableCell>
+                                <TableCell style={{ width: '20%' }}><strong>Files</strong></TableCell>
+                                <TableCell style={{ width: '10%' }}><strong>Feedback</strong></TableCell>
+                                <TableCell style={{ width: '5%' }}><strong>Status</strong></TableCell>
+                                <TableCell style={{ width: '5%' }}><strong>Action</strong></TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -166,7 +162,7 @@ const TopicDetail = () => {
                 </Typography>
             )}
             {selectedContribution && (
-                <UpdateSubmission
+                <UpdateContribution
                     open={open}
                     onClose={handleClose}
                     contribution={selectedContribution}

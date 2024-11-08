@@ -1,16 +1,26 @@
 import { useState } from 'react';
 import {
-    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Dialog, DialogActions,
-    DialogContent, DialogTitle, TextField, Snackbar, Alert, Box, FormControl, Select, MenuItem, InputLabel
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box
 } from '@mui/material';
 import PropTypes from 'prop-types';
-import useTopicService from '../../../../services/topicService';
+import useTopicService from '../../../../../services/topicService';
 import { useNavigate } from 'react-router-dom';
+import TopicDialog from './TopicDialog';
+import ConfirmationDialog from './ConfirmationDialog';
+import StatusFilter from './StatusFilter';
 
-const TopicsTable = ({ topics, facultyId, onChangeData }) => {
+const styles = {
+    primaryBlue: "#2196F3",
+    primaryGreen: "#4CAF50",
+    primaryOrange: "#DD730C",
+    lightGray: "#CCCCCC",
+    white: "#FFFFFF",
+};
+
+const TopicsTable = ({ topics, facultyId, onChangeData, onNotify }) => {
     const topicService = useTopicService();
     const navigate = useNavigate();
-    const [open, setOpen] = useState(false);
+    const [openDialog, setOpenDialog] = useState(false);
     const [currentTopic, setCurrentTopic] = useState(null);
     const [newTopic, setNewTopic] = useState({
         topicName: '',
@@ -18,14 +28,12 @@ const TopicsTable = ({ topics, facultyId, onChangeData }) => {
         endDate: '',
     });
 
-    const [snackbarOpen, setSnackbarOpen] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState('');
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
     const [topicToDelete, setTopicToDelete] = useState(null);
     const [statusFilter, setStatusFilter] = useState('');
 
     const handleClickOpen = (topic) => {
-        setOpen(true);
+        setOpenDialog(true);
         if (topic) {
             setCurrentTopic(topic);
             setNewTopic({
@@ -35,16 +43,12 @@ const TopicsTable = ({ topics, facultyId, onChangeData }) => {
             });
         } else {
             setCurrentTopic(null);
-            setNewTopic({
-                topicName: '',
-                releaseDate: '',
-                endDate: '',
-            });
+            setNewTopic({ topicName: '', releaseDate: '', endDate: '' });
         }
     };
 
-    const handleClose = () => {
-        setOpen(false);
+    const handleCloseDialog = () => {
+        setOpenDialog(false);
         setCurrentTopic(null);
     };
 
@@ -55,18 +59,10 @@ const TopicsTable = ({ topics, facultyId, onChangeData }) => {
         }));
     };
 
-    const openSnackbar = (message) => {
-        setSnackbarMessage(message);
-        setSnackbarOpen(true);
-    };
-
-    const handleCloseSnackbar = () => {
-        setSnackbarOpen(false);
-    };
 
     const handleSubmit = async () => {
         if (!newTopic.topicName || !newTopic.releaseDate || !newTopic.endDate) {
-            openSnackbar('All fields are required.');
+            onNotify('All fields are required.', 'warning');
             return;
         }
 
@@ -79,13 +75,16 @@ const TopicsTable = ({ topics, facultyId, onChangeData }) => {
         try {
             if (currentTopic) {
                 await topicService.updateTopic(`${currentTopic._id}`, formData);
+                onNotify('Topic updated successfully!', 'success');
             } else {
                 await topicService.createTopic(formData);
+                onNotify('Topic created successfully!', 'success')
             }
             onChangeData();
-            handleClose();
+            handleCloseDialog();
         } catch (error) {
             console.error('Error saving topic:', error);
+            onNotify('Error saving topic. Please try again.', 'error');
         }
     };
 
@@ -98,9 +97,11 @@ const TopicsTable = ({ topics, facultyId, onChangeData }) => {
     const handleConfirmDelete = async () => {
         try {
             await topicService.deleteTopic(topicToDelete);
+            onNotify('Topic deleted successfully!', 'success');
             onChangeData();
         } catch (error) {
             console.error('Error deleting topic:', error);
+            onNotify('Error deleting topic. Please try again.', 'error');
         } finally {
             setConfirmDeleteOpen(false);
             setTopicToDelete(null);
@@ -110,7 +111,7 @@ const TopicsTable = ({ topics, facultyId, onChangeData }) => {
     const handleView = (topic) => {
         const topicName = encodeURIComponent(topic.topicName);
         navigate(`/umm/topic/${topic._id}/${topicName}/contributions`);
-    }
+    };
 
     const filterTopics = (topics) => {
         const today = new Date();
@@ -132,39 +133,24 @@ const TopicsTable = ({ topics, facultyId, onChangeData }) => {
             return true;
         });
     };
-
     const filteredTopics = filterTopics(topics);
 
     return (
         <div>
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}>
-                <Button variant="contained" color="primary" onClick={() => handleClickOpen(null)}>
-                    Add Topic
+            <Box sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', mb: 2 }}>
+                <Button variant="contained" sx={{ backgroundColor: styles.primaryBlue }} onClick={() => handleClickOpen(null)}>
+                    Create Topic
                 </Button>
-                <FormControl sx={{ minWidth: 120 }}>
-                    <InputLabel shrink>Status</InputLabel>
-                    <Select
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                        displayEmpty
-                    >
-                        <MenuItem value="">
-                            <em>All</em>
-                        </MenuItem>
-                        <MenuItem value="expired">Expired</MenuItem>
-                        <MenuItem value="soonToExpire">Soon to Expire</MenuItem>
-                        <MenuItem value="active">Active</MenuItem>
-                    </Select>
-                </FormControl>
+                <StatusFilter statusFilter={statusFilter} setStatusFilter={setStatusFilter} />
             </Box>
             <TableContainer component={Paper} style={{ marginTop: '1em' }}>
                 <Table>
-                    <TableHead>
+                    <TableHead sx={{ backgroundColor: styles.primaryOrange }}>
                         <TableRow>
-                            <TableCell sx={{ width: '40%', fontSize: '1.1rem' }}>Topic Name</TableCell>
-                            <TableCell sx={{ width: '22%', fontSize: '1.1rem' }}>Release Date</TableCell>
-                            <TableCell sx={{ width: '22%', fontSize: '1.1rem' }}>End Date</TableCell>
-                            <TableCell sx={{ width: '16%', fontSize: '1.1rem', textAlign: 'center' }}>Actions</TableCell>
+                            <TableCell sx={{ width: '40%', fontSize: '1.1rem', color: 'white' }}>Topic Name</TableCell>
+                            <TableCell sx={{ width: '22%', fontSize: '1.1rem', color: 'white' }}>Release Date</TableCell>
+                            <TableCell sx={{ width: '22%', fontSize: '1.1rem', color: 'white' }}>End Date</TableCell>
+                            <TableCell sx={{ width: '16%', fontSize: '1.1rem', textAlign: 'center', color: 'white' }}>Actions</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -176,7 +162,6 @@ const TopicsTable = ({ topics, facultyId, onChangeData }) => {
                                     threeDaysFromNow.setDate(today.getDate() + 3);
                                     const isExpired = new Date(topic.endDate) < today;
                                     const isSoonToExpire = new Date(topic.endDate) <= threeDaysFromNow;
-
                                     return { ...topic, isExpired, isSoonToExpire };
                                 })
                                 .sort((a, b) => {
@@ -191,6 +176,7 @@ const TopicsTable = ({ topics, facultyId, onChangeData }) => {
                                         <TableRow
                                             key={topic._id}
                                             sx={{
+                                                '&:hover': { backgroundColor: styles.lightGray },
                                                 backgroundColor: topic.isExpired ? 'rgba(255, 0, 0, 0.2)' :
                                                     topic.isSoonToExpire ? 'rgba(0, 128, 0, 0.2)' :
                                                         'inherit'
@@ -207,9 +193,9 @@ const TopicsTable = ({ topics, facultyId, onChangeData }) => {
                                             </TableCell>
                                             <TableCell>
                                                 <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
-                                                    <Button variant="outlined" onClick={() => handleView(topic)}>View</Button>
-                                                    <Button variant="outlined" onClick={() => handleClickOpen(topic)}>Edit</Button>
-                                                    <Button variant="outlined" color="error" onClick={() => handleDelete(topic)}>Delete</Button>
+                                                    <Button variant="contained" onClick={() => handleView(topic)}>View</Button>
+                                                    <Button variant="contained" color="success" onClick={() => handleClickOpen(topic)}>Edit</Button>
+                                                    <Button variant="contained" color="error" onClick={() => handleDelete(topic)}>Delete</Button>
                                                 </Box>
                                             </TableCell>
                                         </TableRow>
@@ -217,92 +203,28 @@ const TopicsTable = ({ topics, facultyId, onChangeData }) => {
                                 })
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={4} align="center">No topics created in this faculty.</TableCell>
+                                <TableCell colSpan={4} align="center">No topics found.</TableCell>
                             </TableRow>
                         )}
                     </TableBody>
                 </Table>
             </TableContainer>
 
-            {/* Snackbar for notifications */}
-            <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={6000}
-                onClose={handleCloseSnackbar}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-            >
-                <Alert onClose={handleCloseSnackbar} severity="warning" sx={{ width: '100%' }}>
-                    {snackbarMessage}
-                </Alert>
-            </Snackbar>
+            <TopicDialog
+                open={openDialog}
+                onClose={handleCloseDialog}
+                onSubmit={handleSubmit}
+                currentTopic={currentTopic}
+                newTopic={newTopic}
+                handleFieldChange={handleFieldChange}
+            />
 
-            {/* Dialog for Create/Edit Topic */}
-            <Dialog open={open} onClose={handleClose}>
-                <DialogTitle>{currentTopic ? 'Edit Topic' : 'Create Topic'}</DialogTitle>
-                <DialogContent>
-                    <TextField
-                        autoFocus
-                        margin="dense"
-                        name="topicName"
-                        label="Topic Name"
-                        type="text"
-                        fullWidth
-                        variant="outlined"
-                        value={newTopic.topicName}
-                        onChange={handleFieldChange}
-                    />
-                    <TextField
-                        margin="dense"
-                        name="releaseDate"
-                        label="Release Date"
-                        type="datetime-local"
-                        slotProps={{
-                            inputLabel: {
-                                shrink: true,
-                            },
-                        }}
-                        fullWidth
-                        variant="outlined"
-                        value={newTopic.releaseDate}
-                        onChange={handleFieldChange}
-                    />
-                    <TextField
-                        margin="dense"
-                        name="endDate"
-                        label="End Date"
-                        type="datetime-local"
-                        slotProps={{
-                            inputLabel: {
-                                shrink: true,
-                            },
-                        }}
-                        fullWidth
-                        variant="outlined"
-                        value={newTopic.endDate}
-                        onChange={handleFieldChange}
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleClose} color="primary">
-                        Cancel
-                    </Button>
-                    <Button onClick={handleSubmit} color="success">
-                        {currentTopic ? 'Update' : 'Create'}
-                    </Button>
-                </DialogActions>
-            </Dialog>
-
-            {/* Confirmation Modal for Delete */}
-            <Dialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)}>
-                <DialogTitle>Confirm Deletion</DialogTitle>
-                <DialogContent>
-                    Are you sure you want to delete this topic <strong>  &quot;{currentTopic}&quot;</strong> ?
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setConfirmDeleteOpen(false)} color="primary">Cancel</Button>
-                    <Button onClick={handleConfirmDelete} color="error">Delete</Button>
-                </DialogActions>
-            </Dialog>
+            <ConfirmationDialog
+                open={confirmDeleteOpen}
+                onClose={() => setConfirmDeleteOpen(false)}
+                onConfirm={handleConfirmDelete}
+                currentTopic={currentTopic}
+            />
         </div>
     );
 };
@@ -311,6 +233,7 @@ TopicsTable.propTypes = {
     topics: PropTypes.array.isRequired,
     facultyId: PropTypes.string.isRequired,
     onChangeData: PropTypes.func.isRequired,
+    onNotify: PropTypes.func.isRequired,
 };
 
 export default TopicsTable;

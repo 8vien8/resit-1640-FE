@@ -6,6 +6,14 @@ import {
 } from '@mui/material';
 import { FacultyTable, ConfirmDeleteDialog } from './FacultiesTable';
 
+const styles = {
+    primaryOrange: "#DD730C",
+    primaryGreen: "#4CAF50",
+    primaryBlue: "#2196F3",
+    lightGray: "#B0BEC5",
+    offWhite: "#F5F5F5",
+};
+
 const FacultiesManagement = () => {
     const [hasFetchedData, setHasFetchedData] = useState(false);
     const [facultyName, setFacultyName] = useState('');
@@ -81,17 +89,20 @@ const FacultiesManagement = () => {
     const handleViewFaculty = (faculty) => {
         const encodedFacultyName = encodeURIComponent(faculty.facultyName);
         navigate(`/umm/faculty/${faculty._id}/${encodedFacultyName}`);
-    }
+    };
 
     const resetCreateForm = () => {
         setFacultyName('');
         setError(null);
     };
-    return (
-        <Container>
-            <Typography variant="h4" gutterBottom>Faculties Management</Typography>
 
-            <Typography variant="h6" style={{ marginTop: '1em' }}>Add New Faculty</Typography>
+    return (
+        <Container sx={{ padding: '20px', backgroundColor: styles.offWhite, borderRadius: '8px', boxShadow: 3 }}>
+            <Typography align='center' variant="h4" gutterBottom sx={{ color: styles.primaryBlue }}>
+                Faculties Management
+            </Typography>
+
+            <Typography variant="h6" sx={{ marginTop: '1em', color: styles.primaryOrange }}>Add New Faculty</Typography>
             <TextField
                 label="Faculty Name"
                 variant="outlined"
@@ -100,7 +111,9 @@ const FacultiesManagement = () => {
                 fullWidth
                 margin="normal"
             />
-            <Button variant="contained" color="primary" onClick={handleCreateFaculty}>Create</Button>
+            <Button variant="contained" color="primary" onClick={handleCreateFaculty} sx={{ backgroundColor: styles.primaryGreen }}>
+                Create
+            </Button>
 
             <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError(null)}>
                 <Alert onClose={() => setError(null)} severity="error">{error}</Alert>
@@ -118,7 +131,7 @@ const FacultiesManagement = () => {
 
             {editingFaculty && (
                 <Dialog open={Boolean(editingFaculty)} onClose={() => setEditingFaculty(null)}>
-                    <DialogTitle>Edit Faculty</DialogTitle>
+                    <DialogTitle align='center'>Edit Faculty</DialogTitle>
                     <DialogContent>
                         <TextField
                             label="Faculty Name"
@@ -141,7 +154,6 @@ const FacultiesManagement = () => {
                 onDelete={handleDeleteFaculty}
                 open={confirmDeleteDialogOpen}
                 onClose={() => setConfirmDeleteDialogOpen(false)}
-                onConfirm={handleDeleteFaculty}
                 facultyName={facultyToDelete?.facultyName}
             />
         </Container>

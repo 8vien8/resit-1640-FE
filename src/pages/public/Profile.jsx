@@ -66,8 +66,17 @@ const Profile = () => {
         }
     };
 
-    if (loading) return <CircularProgress />;
-    if (error) return <Alert severity="error">{error}</Alert>;
+    if (loading) return (
+        <Box align='center'>
+            <CircularProgress />;
+        </Box>
+    );
+
+    if (error) return (
+        <Box align='center'>
+            <Alert severity="error">{error}</Alert>
+        </Box>
+    );
 
     return (
         <Container>
@@ -85,10 +94,6 @@ const Profile = () => {
                 <Typography variant="h6">No user data available.</Typography>}
         </Container>
     );
-};
-
-Profile.propTypes = {
-    token: PropTypes.string.isRequired
 };
 
 const ProfileDisplay = ({

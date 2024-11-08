@@ -1,132 +1,158 @@
 import { useParams } from "react-router-dom";
 import { useState, useCallback, useEffect } from "react";
 import useContributionService from "../../../../services/contributionsServices";
-import { Card, CardContent, Typography, Box, List, ListItem, ListItemText, ListItemIcon, useTheme } from "@mui/material";
-import pdfIcon from '../../../../assets/pdf.ico'
-import wordIcon from '../../../../assets/word.ico'
-import imageIcon from '../../../../assets/image.ico'
-import defaultIcon from '../../../../assets/default.ico'
+import {
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography,
+    List, ListItem, ListItemText, ListItemIcon, useTheme, Container, FormControl, InputLabel, Select, MenuItem
+} from "@mui/material";
+import pdfIcon from '../../../../assets/pdf.ico';
+import wordIcon from '../../../../assets/word.ico';
+import imageIcon from '../../../../assets/image.ico';
+import defaultIcon from '../../../../assets/default.ico';
+
+const iconStyles = { width: 50, height: 50 };
+const MAX_FILE_NAME_LENGTH = 30;
+const styles = {
+    primaryOrange: "#DD730C",
+    primaryGreen: "#4CAF50",
+    primaryBlue: "#2196F3",
+    lightGray: "#B0BEC5",
+    offWhite: "#F5F5F5",
+};
 function ContributionsInFaculty() {
     const { topicId, topicName } = useParams();
-    const [hasFetchData, setHasFetchedData] = useState(false);
     const contributionsServices = useContributionService();
     const [contributions, setContributions] = useState([]);
+    const [filteredContributions, setFilteredContributions] = useState([]);
+    const [statusFilter, setStatusFilter] = useState('All');
+    const [hasFetchedData, setHasFetchedData] = useState(false);
 
-    // Fetch contributions based on topicId
     const fetchData = useCallback(async () => {
         try {
             const contributions = await contributionsServices.getContributionByTopicId(topicId);
             setContributions(contributions);
+            setFilteredContributions(contributions);
+            setHasFetchedData(true);
         } catch (err) {
             console.error("Error fetching contributions: ", err);
         }
     }, [contributionsServices, topicId]);
 
     useEffect(() => {
-        if (!hasFetchData) {
+        if (!hasFetchedData) {
             fetchData();
-            setHasFetchedData(true);
         }
-    }, [fetchData, hasFetchData]);
+    }, [fetchData, hasFetchedData]);
+
+    useEffect(() => {
+        if (statusFilter === 'All') {
+            setFilteredContributions(contributions);
+        } else {
+            setFilteredContributions(contributions.filter(contribution => contribution.statusID?.statusName === statusFilter));
+        }
+    }, [statusFilter, contributions]);
 
     const getFileIcon = (fileType) => {
-        switch (fileType) {
-            case 'application/pdf':
-                return <img src={pdfIcon} />;
-            case 'image/jpeg':
-            case 'image/png':
-                return <img src={imageIcon} />;
-            case 'application/docs':
-                return <img src={wordIcon} />;
-            default:
-                return <img src={defaultIcon} />;
-        }
+        const icons = {
+            'application/pdf': pdfIcon,
+            'image/jpeg': imageIcon,
+            'image/png': imageIcon,
+            'application/msword': wordIcon,
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': wordIcon,
+        };
+        return <img src={icons[fileType] || defaultIcon} alt="File icon" style={iconStyles} />;
     };
+
     const theme = useTheme();
 
     const getStatusColor = (status) => {
-        switch (status) {
-            case 'Pending':
-                return theme.palette.primary.main;
-            case 'Approved':
-                return theme.palette.success.main;
-            case 'Rejected':
-                return theme.palette.error.main;
-            default:
-                return theme.palette.text.secondary;
-        }
+        const statusColorMap = {
+            'Pending': theme.palette.primary.main,
+            'Approved': theme.palette.success.main,
+            'Rejected': theme.palette.error.main,
+        };
+        return statusColorMap[status] || theme.palette.text.secondary;
+    };
+
+    const truncateFileName = (name) => {
+        return name.length > MAX_FILE_NAME_LENGTH ? `${name.substring(0, MAX_FILE_NAME_LENGTH)}...` : name;
     };
 
     return (
-        <Box >
-            <Typography variant="h4" gutterBottom>
+        <Container sx={{ padding: '20px', backgroundColor: styles.offWhite, borderRadius: '8px', boxShadow: theme.shadows[3] }}>
+            <Typography variant="h4" gutterBottom align="center" sx={{ color: styles.primaryBlue }}>
                 Contributions for Topic: {topicName}
             </Typography>
-            <Box display="flex" flexWrap="wrap" justifyContent="space-between" >
-                {contributions.map((contribution) => (
-                    <Box
-                        key={contribution._id}
-                        mb={2}
-                        width="30%"
-                    >
-                        <Card variant="outlined">
-                            <CardContent
-                                sx={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    height: '300px',
-                                    overflow: 'hidden',
-                                    bgcolor: '#f9f9f9',
-                                    border: '1px solid #ccc',
-                                    borderRadius: '8px',
-                                    boxShadow: 2,
-                                    padding: 2,
-                                }}
-                            >
-                                <Typography variant="h5" component="div" fontWeight="bold" color="primary">
-                                    {contribution.title}
-                                </Typography>
-                                <Typography color="text.secondary" sx={{ marginBottom: 1 }}>
-                                    Submitted by: <span style={{ fontWeight: 'bold' }}>{contribution.userID?.username}</span>
-                                </Typography>
-                                <Typography variant="body2" sx={{ marginBottom: 1, color: getStatusColor(contribution.statusID?.statusName) }}>
-                                    Status: <span style={{ fontWeight: 'bold' }}>{contribution.statusID?.statusName}</span>
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary" sx={{ marginBottom: 1 }}>
-                                    Submitted at: <span style={{ fontWeight: 'bold' }}>{new Date(contribution.submissionDate).toLocaleString()}</span>
-                                </Typography>
 
-                                <Box sx={{ overflow: 'auto', flexGrow: 1, padding: 1, backgroundColor: '#fff', borderRadius: '4px', boxShadow: 1 }}>
-                                    <Typography variant="body2" gutterBottom>
-                                        <strong>Content:</strong> {contribution.content}
-                                    </Typography>
+            <FormControl fullWidth sx={{ marginBottom: 2 }}>
+                <InputLabel>Status</InputLabel>
+                <Select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                    <MenuItem value="All">All</MenuItem>
+                    <MenuItem value="Pending">Pending</MenuItem>
+                    <MenuItem value="Approved">Approved</MenuItem>
+                    <MenuItem value="Rejected">Rejected</MenuItem>
+                </Select>
+            </FormControl>
 
-                                    <Typography variant="body2" fontWeight="bold">
-                                        Uploaded Files:
+            <TableContainer component={Paper} elevation={3}>
+                <Table>
+                    <TableHead>
+                        <TableRow sx={{ backgroundColor: styles.primaryOrange }}>
+                            <TableCell sx={{ width: '15%' }}><strong style={{ color: styles.offWhite }}>Title</strong></TableCell>
+                            <TableCell sx={{ width: '15%' }}><strong style={{ color: styles.offWhite }}>Submitted by</strong></TableCell>
+                            <TableCell sx={{ width: '10%' }}><strong style={{ color: styles.offWhite }}>Status</strong></TableCell>
+                            <TableCell sx={{ width: '10%' }}><strong style={{ color: styles.offWhite }}>Submitted at</strong></TableCell>
+                            <TableCell sx={{ width: '25%' }}><strong style={{ color: styles.offWhite }}>Content</strong></TableCell>
+                            <TableCell sx={{ width: '25%' }}><strong style={{ color: styles.offWhite }}>Files</strong></TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {filteredContributions.map((contribution) => (
+                            <TableRow key={contribution._id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 }, '&:hover': { backgroundColor: styles.lightGray } }}>
+                                <TableCell>
+                                    <Typography variant="body1" fontWeight="bold" color={styles.primaryBlue}>
+                                        {contribution.title}
                                     </Typography>
-                                    <List>
+                                </TableCell>
+                                <TableCell>{contribution.userID?.username}</TableCell>
+                                <TableCell>
+                                    <Typography variant="body2" color={getStatusColor(contribution.statusID?.statusName)}>
+                                        {contribution.statusID?.statusName}
+                                    </Typography>
+                                </TableCell>
+                                <TableCell>{new Date(contribution.submissionDate).toLocaleString()}</TableCell>
+                                <TableCell>
+                                    <Typography variant="body2" sx={{ maxWidth: 200, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                                        {contribution.content}
+                                    </Typography>
+                                </TableCell>
+                                <TableCell>
+                                    <List sx={{ maxHeight: '150px', overflowY: 'auto' }}>
                                         {contribution.files.map((file, index) => (
                                             <ListItem key={index} divider>
                                                 <ListItemIcon>
                                                     {getFileIcon(file.fileType)}
                                                 </ListItemIcon>
                                                 <ListItemText>
-                                                    <Typography variant="body2" color="primary">
+                                                    <Typography variant="body2" color={styles.primaryBlue} sx={{ textDecoration: 'underline' }}>
                                                         <a href={file.filePath} target="_blank" rel="noopener noreferrer">
-                                                            <strong>{file.fileName}</strong>
+                                                            <strong>{truncateFileName(file.fileName)}</strong>
                                                         </a>
                                                     </Typography>
                                                 </ListItemText>
                                             </ListItem>
                                         ))}
                                     </List>
-                                </Box>
-                            </CardContent>
-                        </Card>
-                    </Box>
-                ))}
-            </Box>
-        </Box >
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
+        </Container>
     );
 }
 
