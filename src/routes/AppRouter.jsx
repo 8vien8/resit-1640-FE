@@ -32,7 +32,6 @@ import SignUpPage from '../pages/public/SignUpPage';
 import LoginPage from '../pages/public/LoginPage';
 
 // Public pages
-import TermsAndConditions from '../pages/Student/TermsAndConditions';
 import LandingPage from '../pages/public/LandingPage';
 import ForgotPasswordPage from '../pages/public/ForgotPasswordPage';
 import ResetPasswordSuccess from '../pages/public/ResetPasswordSuccess';
@@ -95,7 +94,6 @@ const AppRouter = () => {
                         <Route index element={<StudentDashboard />} />
                         <Route path="topic/:topicId/:topicName/:endDate" element={<TopicDetail />} />
                         <Route path="topic/:topicId/:topicName/create-submission" element={<CreateSubmission />} />
-                        <Route path="terms" element={<TermsAndConditions />} />
                         <Route path="profile" element={<Profile />} />
                     </Route>
                 </Route>

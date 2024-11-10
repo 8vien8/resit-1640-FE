@@ -13,7 +13,7 @@ const StudentDashboard = () => {
     const topicService = useTopicService();
     const [topics, setTopics] = useState([]);
     const [hasFetchedData, setHasFetchedData] = useState(false);
-    const [statusFilter, setStatusFilter] = useState('s')
+    const [statusFilter, setStatusFilter] = useState('')
     const navigate = useNavigate();
 
     const fetchData = useCallback(async () => {
