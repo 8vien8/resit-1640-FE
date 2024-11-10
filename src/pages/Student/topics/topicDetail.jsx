@@ -90,35 +90,36 @@ const TopicDetail = () => {
     };
 
     const renderContributionRows = () => {
-        return contributions.map((contribution) => (
-            <TableRow key={contribution._id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 }, '&:hover': { backgroundColor: styles.lightGray } }}>
-                <TableCell>
-                    <Typography variant="body1" fontWeight="bold" color={styles.primaryBlue}>
-                        {contribution.title}
-                    </Typography>
-                </TableCell>
-                <TableCell>
-                    <Typography variant="body2" sx={{ maxWidth: 200, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                        {contribution.content}
-                    </Typography>
-                </TableCell>
-                <TableCell>{new Date(contribution.submissionDate).toLocaleString()}</TableCell>
-                <TableCell>{renderFiles(contribution.files)}</TableCell>
-                <TableCell>{contribution.comments}</TableCell>
-                <TableCell>
-                    <Typography variant="body2" fontWeight="bold" color={getStatusColor(contribution.statusID?.statusName)}>
-                        {contribution.statusID?.statusName}
-                    </Typography>
-                </TableCell>
-                <TableCell>
-                    {new Date(endDate) > new Date() && (
-                        <Button onClick={() => handleOpen(contribution)} variant="contained" color="primary">
-                            Update
-                        </Button>
-                    )}
-                </TableCell>
-            </TableRow>
-        ));
+        return contributions
+            .map((contribution) => (
+                <TableRow key={contribution._id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 }, '&:hover': { backgroundColor: styles.lightGray } }}>
+                    <TableCell>
+                        <Typography variant="body1" fontWeight="bold" color={styles.primaryBlue}>
+                            {contribution.title}
+                        </Typography>
+                    </TableCell>
+                    <TableCell>
+                        <Typography variant="body2" sx={{ maxWidth: 200, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                            {contribution.content}
+                        </Typography>
+                    </TableCell>
+                    <TableCell>{new Date(contribution.submissionDate).toLocaleString()}</TableCell>
+                    <TableCell>{renderFiles(contribution.files)}</TableCell>
+                    <TableCell>{contribution.comments}</TableCell>
+                    <TableCell>
+                        <Typography variant="body2" fontWeight="bold" color={getStatusColor(contribution.statusID?.statusName)}>
+                            {contribution.statusID?.statusName}
+                        </Typography>
+                    </TableCell>
+                    <TableCell>
+                        {contribution.statusID?.statusName === 'Pending' && new Date(endDate) > new Date() && (
+                            <Button onClick={() => handleOpen(contribution)} variant="contained" color="primary">
+                                Update
+                            </Button>
+                        )}
+                    </TableCell>
+                </TableRow>
+            ));
     };
 
     const truncateFileName = (name) => {

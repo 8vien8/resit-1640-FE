@@ -94,7 +94,9 @@ const FMCDashBoard = () => {
                     <Typography align='center' variant="h4" gutterBottom >
                         Welcome <strong>{user.username}</strong>
                     </Typography>
+
                     <StatusFilter statusFilter={statusFilter} setStatusFilter={setStatusFilter} />
+
                     <TopicsTable
                         topics={filteredTopics}
                         onView={handleView}
