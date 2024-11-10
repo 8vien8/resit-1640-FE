@@ -113,7 +113,7 @@ const ProfileDisplay = ({
                 <Avatar
                     alt={user.username}
                     src={isEditing ? editedAvatar : user.avatar}
-                    sx={{ width: 120, height: 120, border: '2px solid #1976d2' }} // Add border to avatar
+                    sx={{ width: 120, height: 120, border: '2px solid #1976d2' }}
                 />
                 {isEditing && (
                     <IconButton component="label" color="primary" >

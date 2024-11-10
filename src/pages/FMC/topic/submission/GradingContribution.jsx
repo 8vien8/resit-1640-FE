@@ -1,9 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { Modal, Box, Button, TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
-import useContributionService from '../../../../services/contributionsServices'; // Import your service
+import { Dialog, Button, TextField, FormControl, InputLabel, Select, MenuItem, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import useContributionService from '../../../../services/contributionsServices';
 
-const UpdateContribution = ({ open, onClose, contribution, onUpdate }) => {
+const styles = {
+    primaryOrange: "#DD730C",
+    primaryGreen: "#4CAF50",
+    primaryBlue: "#2196F3",
+    lightGray: "#B0BEC5",
+    offWhite: "#F5F5F5",
+};
+const GradingContribution = ({ open, onClose, contribution, onUpdate }) => {
     const [comments, setComments] = useState('');
     const [status, setStatus] = useState('');
     const [files, setFiles] = useState([]);
@@ -56,18 +63,11 @@ const UpdateContribution = ({ open, onClose, contribution, onUpdate }) => {
     };
 
     return (
-        <Modal open={open} onClose={handleClose}>
-            <Box sx={{
-                width: 300,
-                bgcolor: 'background.paper',
-                p: 4,
-                mx: 'auto',
-                mt: '20%',
-                borderRadius: 2,
-                boxShadow: 3
-            }}>
-                <h2>Update Contribution</h2>
+        <Dialog sx={{ borderRadius: 8 }} open={open} onClose={handleClose}>
+            <DialogTitle sx={{ backgroundColor: styles.primaryOrange, color: styles.offWhite, mb: 1 }} align='center'>Update Contribution</DialogTitle>
+            <DialogContent>
                 <TextField
+                    margin="dense"
                     fullWidth
                     label="Feedback"
                     multiline
@@ -89,16 +89,16 @@ const UpdateContribution = ({ open, onClose, contribution, onUpdate }) => {
                         ))}
                     </Select>
                 </FormControl>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+                <DialogActions sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
                     <Button onClick={handleClose} variant="outlined" color="secondary">Cancel</Button>
                     <Button onClick={handleSubmit} variant="contained" color="primary">Update</Button>
-                </Box>
-            </Box>
-        </Modal>
+                </DialogActions>
+            </DialogContent>
+        </Dialog >
     );
 };
 
-UpdateContribution.propTypes = {
+GradingContribution.propTypes = {
     open: PropTypes.bool.isRequired,
     onClose: PropTypes.func.isRequired,
     contribution: PropTypes.shape({
@@ -116,4 +116,4 @@ UpdateContribution.propTypes = {
     onUpdate: PropTypes.func.isRequired
 };
 
-export default UpdateContribution;
+export default GradingContribution;

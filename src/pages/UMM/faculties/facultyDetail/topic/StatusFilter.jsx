@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 const StatusFilter = ({ statusFilter, setStatusFilter }) => {
     return (
-        <FormControl sx={{ minWidth: 120 }}>
+        <FormControl sx={{ minWidth: '120px' }}>
             <InputLabel shrink>Status</InputLabel>
             <Select
                 value={statusFilter}

@@ -6,87 +6,79 @@ import wordIcon from '../../../../assets/word.ico';
 import imageIcon from '../../../../assets/image.ico';
 import defaultIcon from '../../../../assets/default.ico';
 import pdfIcon from '../../../../assets/pdf.ico';
+import TermsAndConditions from '../../TermsAndConditions';
 import {
     Container, TextField, Button, FormControlLabel, Checkbox, Box,
-    Typography, Paper, Snackbar, Alert, List, ListItem, ListItemIcon, ListItemText, IconButton
+    Typography, Paper, Snackbar, Alert, List, ListItem, ListItemIcon, ListItemText, IconButton,
 } from '@mui/material';
 import { UploadFile, Delete } from '@mui/icons-material';
 
-const iconStyles = { width: 50, height: 50 };
 const CreateSubmission = () => {
-    const { topicId } = useParams();
+    const { topicId, topicName } = useParams();
     const { user } = useContext(UserContext);
+    const contributionService = useContributionService();
     const userId = user._id;
     const facultyId = user.facultyID;
-    const contributionService = useContributionService();
-    const statusID = '64f000000000000000000041';
 
     const [submissionData, setSubmissionData] = useState({
         userID: userId,
         facultyID: facultyId,
         topicID: topicId,
-        statusID: statusID,
         title: '',
         content: '',
         agreedToTnC: false,
         files: []
     });
 
-    const [snackbarOpen, setSnackbarOpen] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState('');
-    const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+    const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+    const [modalOpen, setModalOpen] = useState(false);
 
-    const handleChange = (e) => {
-        const { name, type, checked, value } = e.target;
-        setSubmissionData(prevState => ({
-            ...prevState,
-            [name]: type === 'checkbox' ? checked : value
-        }));
+    const handleChange = ({ target: { name, type, checked, value } }) => {
+        setSubmissionData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
     };
 
     const handleFileChange = (e) => {
         const selectedFiles = Array.from(e.target.files);
-        const newFiles = selectedFiles.filter(file =>
-            !submissionData.files.some(f => f.name === file.name)
-        );
+        const newFiles = selectedFiles.filter(file => {
+            const validTypes = [
+                'application/pdf',
+                'image/jpeg',
+                'image/png',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            ];
+            if (validTypes.includes(file.type) && !submissionData.files.some(f => f.name === file.name)) {
+                return true;
+            } else {
+                showSnackbar(`File "${file.name}" is not a valid type.`, 'warning');
+                return false;
+            }
+        });
 
-        setSubmissionData(prevState => ({
-            ...prevState,
-            files: [...prevState.files, ...newFiles]
-        }));
+        setSubmissionData(prev => ({ ...prev, files: [...prev.files, ...newFiles] }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (submissionData.files.length === 0) {
-            setSnackbarOpen(true);
-            setSnackbarMessage('Please upload at least one file.');
-            setSnackbarSeverity('warning');
+            showSnackbar('Please upload at least one file.', 'warning');
             return;
         }
 
         const data = new FormData();
-        for (const key in submissionData) {
-            if (key !== 'files') {
-                data.append(key, submissionData[key]);
-            }
-        }
-        submissionData.files.forEach((file) => {
-            data.append('files', file);
+        Object.entries(submissionData).forEach(([key, value]) => {
+            if (key !== 'files') data.append(key, value);
         });
+        submissionData.files.forEach(file => data.append('files', file));
 
         try {
             await contributionService.createContribution(data);
-            setSnackbarOpen(true);
-            setSnackbarMessage('Submission created successfully!');
-            setSnackbarSeverity('success');
+            showSnackbar('Submission created successfully!', 'success');
             resetForm();
         } catch (error) {
             console.error('Error creating submission:', error);
-            setSnackbarOpen(true);
-            setSnackbarMessage('Failed to create submission.');
-            setSnackbarSeverity('error');
+            showSnackbar('Failed to create submission.', 'error');
         }
     };
 
@@ -95,7 +87,6 @@ const CreateSubmission = () => {
             userID: userId,
             facultyID: facultyId,
             topicID: topicId,
-            statusID: statusID,
             title: '',
             content: '',
             agreedToTnC: false,
@@ -103,26 +94,24 @@ const CreateSubmission = () => {
         });
     };
 
+    const showSnackbar = (message, severity) => {
+        setSnackbar({ open: true, message, severity });
+    };
+
     const getFileIcon = (fileType) => {
-        switch (fileType) {
-            case 'application/pdf':
-                return <img src={pdfIcon} alt="PDF icon" style={iconStyles} />;
-            case 'image/jpeg':
-            case 'image/png':
-                return <img src={imageIcon} alt="Image icon" style={iconStyles} />;
-            case 'application/msword':
-            case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-                return <img src={wordIcon} alt="Word icon" style={iconStyles} />;
-            default:
-                return <img src={defaultIcon} alt="Default icon" style={iconStyles} />;
-        }
+        const icons = {
+            'application/pdf': pdfIcon,
+            'image/jpeg': imageIcon,
+            'image/png': imageIcon,
+            'application/msword': wordIcon,
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': wordIcon,
+            default: defaultIcon
+        };
+        return <img src={icons[fileType] || icons.default} alt="File icon" style={{ width: 50, height: 50 }} />;
     };
 
     const handleRemoveFile = (fileToRemove) => {
-        setSubmissionData(prevState => ({
-            ...prevState,
-            files: prevState.files.filter(file => file.name !== fileToRemove.name)
-        }));
+        setSubmissionData(prev => ({ ...prev, files: prev.files.filter(file => file.name !== fileToRemove.name) }));
     };
 
     const renderFileList = () => (
@@ -130,9 +119,7 @@ const CreateSubmission = () => {
             {submissionData.files.map((file, index) => (
                 <ListItem key={index}>
                     <ListItemIcon>{getFileIcon(file.type)}</ListItemIcon>
-                    <ListItemText>
-                        {file.name}
-                    </ListItemText>
+                    <ListItemText primary={file.name} />
                     <IconButton color='error' edge="end" onClick={() => handleRemoveFile(file)}>
                         <Delete />
                     </IconButton>
@@ -142,9 +129,9 @@ const CreateSubmission = () => {
     );
 
     return (
-        <Container component={Paper} sx={{ padding: 3 }}>
-            <Typography variant="h5" gutterBottom align='center'>
-                Create Submission
+        <Container component={Paper} sx={{ p: 3, mt: 4, boxShadow: 3, borderRadius: 2 }}>
+            <Typography variant="h4" gutterBottom align="center">
+                Create contribution for topic: <strong>{topicName}</strong>
             </Typography>
             <form onSubmit={handleSubmit}>
                 <TextField
@@ -176,12 +163,12 @@ const CreateSubmission = () => {
                             required
                         />
                     }
-                    label="I agree to the Terms and Conditions"
+                    label={<span style={{ cursor: 'pointer' }} onClick={() => setModalOpen(true)}>I agree to the Terms and Conditions</span>}
                 />
                 <Button
                     variant="contained"
                     component="label"
-                    sx={{ marginTop: 2 }}
+                    sx={{ mt: 2, bgcolor: 'success.main', '&:hover': { bgcolor: 'success.dark' } }}
                     startIcon={<UploadFile />}
                 >
                     Upload Files
@@ -189,32 +176,23 @@ const CreateSubmission = () => {
                         type="file"
                         multiple
                         hidden
-                        name="files"
-                        accept="*/*"
+                        accept="application/pdf,.jpg,.jpeg,.png,.doc,.docx"
                         onChange={handleFileChange}
                     />
                 </Button>
-                <Box style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                <Box sx={{ mt: 2, maxHeight: '200px', overflowY: 'auto', border: '1px solid', borderColor: 'divider', padding: 1 }}>
                     {renderFileList()}
                 </Box>
-                <Button
-                    type="submit"
-                    variant="contained"
-                    color="primary"
-                    sx={{ marginTop: 2 }}
-                >
+                <Button type="submit" variant="contained" sx={{ mt: 3, width: '100%', bgcolor: 'primary.main', color: 'white', '&:hover': { bgcolor: 'primary.dark' } }}>
                     Submit
                 </Button>
             </form>
-            <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={6000}
-                onClose={() => setSnackbarOpen(false)}
-            >
-                <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarSeverity}>
-                    {snackbarMessage}
+            <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>
+                <Alert onClose={() => setSnackbar(prev => ({ ...prev, open: false }))} severity={snackbar.severity}>
+                    {snackbar.message}
                 </Alert>
             </Snackbar>
+            <TermsAndConditions open={modalOpen} onClose={() => setModalOpen(false)} />
         </Container>
     );
 };

@@ -4,7 +4,7 @@ import useContributionService from "../../../services/contributionsServices";
 import { UserContext } from "../../../context/UserContext";
 import {
     Table, TableBody, TableCell, TableContainer, TableHead,
-    TableRow, Paper, Typography, List, ListItem,
+    TableRow, Paper, Typography, List, ListItem, useTheme,
     ListItemIcon, ListItemText, Container, Button, Snackbar, Alert,
     CircularProgress
 } from '@mui/material';
@@ -79,7 +79,6 @@ const TopicDetail = () => {
     };
 
     const getFileIcon = (fileType) => {
-        const iconStyle = { width: 50, height: 50 };
         const iconMap = {
             'application/pdf': pdfIcon,
             'image/jpeg': imageIcon,
@@ -87,27 +86,43 @@ const TopicDetail = () => {
             'application/msword': wordIcon,
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document': wordIcon
         };
-        return <img src={iconMap[fileType] || defaultIcon} alt={`${fileType} icon`} style={iconStyle} />;
+        return <img src={iconMap[fileType] || defaultIcon} alt={`${fileType} icon`} style={iconStyles} />;
     };
 
     const renderContributionRows = () => {
         return contributions.map((contribution) => (
-            <TableRow key={contribution._id}>
-                <TableCell>{contribution.title}</TableCell>
-                <TableCell>{contribution.content}</TableCell>
+            <TableRow key={contribution._id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 }, '&:hover': { backgroundColor: styles.lightGray } }}>
+                <TableCell>
+                    <Typography variant="body1" fontWeight="bold" color={styles.primaryBlue}>
+                        {contribution.title}
+                    </Typography>
+                </TableCell>
+                <TableCell>
+                    <Typography variant="body2" sx={{ maxWidth: 200, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                        {contribution.content}
+                    </Typography>
+                </TableCell>
                 <TableCell>{new Date(contribution.submissionDate).toLocaleString()}</TableCell>
                 <TableCell>{renderFiles(contribution.files)}</TableCell>
                 <TableCell>{contribution.comments}</TableCell>
-                <TableCell>{contribution.statusID?.statusName}</TableCell>
+                <TableCell>
+                    <Typography variant="body2" fontWeight="bold" color={getStatusColor(contribution.statusID?.statusName)}>
+                        {contribution.statusID?.statusName}
+                    </Typography>
+                </TableCell>
                 <TableCell>
                     {new Date(endDate) > new Date() && (
-                        <Button onClick={() => handleOpen(contribution)} variant="outlined" color="primary">
+                        <Button onClick={() => handleOpen(contribution)} variant="contained" color="primary">
                             Update
                         </Button>
                     )}
                 </TableCell>
             </TableRow>
         ));
+    };
+
+    const truncateFileName = (name) => {
+        return name.length > MAX_FILE_NAME_LENGTH ? `${name.substring(0, MAX_FILE_NAME_LENGTH)}...` : name;
     };
 
     const renderFiles = (files) => (
@@ -117,9 +132,9 @@ const TopicDetail = () => {
                     {files.map((file) => (
                         <ListItem key={file._id}>
                             <ListItemIcon>{getFileIcon(file.fileType)}</ListItemIcon>
-                            <ListItemText sx={{ maxHeight: '50px', overflowY: 'hidden' }}>
+                            <ListItemText >
                                 <a href={file.filePath} target="_blank" rel="noopener noreferrer">
-                                    {file.fileName}
+                                    <strong>{truncateFileName(file.fileName)}</strong>
                                 </a>
                             </ListItemText>
                         </ListItem>
@@ -131,9 +146,28 @@ const TopicDetail = () => {
         </div>
     );
 
+    const theme = useTheme();
+    const getStatusColor = (status) => {
+        const statusColorMap = {
+            'Pending': theme.palette.primary.main,
+            'Approved': theme.palette.success.main,
+            'Rejected': theme.palette.error.main,
+        };
+        return statusColorMap[status] || theme.palette.text.secondary;
+    };
+    const iconStyles = { width: 50, height: 50 };
+    const MAX_FILE_NAME_LENGTH = 30;
+    const styles = {
+        primaryOrange: "#DD730C",
+        primaryGreen: "#4CAF50",
+        primaryBlue: "#2196F3",
+        lightGray: "#B0BEC5",
+        offWhite: "#F5F5F5",
+    };
+
     return (
-        <Container>
-            <Typography variant="h4" gutterBottom align="center">
+        <Container sx={{ padding: '20px', backgroundColor: styles.offWhite, borderRadius: '8px', boxShadow: theme.shadows[3] }}>
+            <Typography variant="h4" gutterBottom align="center" sx={{ color: styles.primaryBlue }}>
                 Topic: <strong>{topicName} </strong>
             </Typography>
 
@@ -142,17 +176,17 @@ const TopicDetail = () => {
                     <CircularProgress />
                 </div>
             ) : contributions.length > 0 ? (
-                <TableContainer component={Paper}>
+                <TableContainer component={Paper} elevation={3}>
                     <Table>
                         <TableHead>
-                            <TableRow>
-                                <TableCell sx={{ width: '20%' }}><strong>Title</strong></TableCell>
-                                <TableCell sx={{ width: '30%' }}><strong>Content</strong></TableCell>
-                                <TableCell sx={{ width: '15%' }}><strong>Submission Date</strong></TableCell>
-                                <TableCell sx={{ width: '20%' }}><strong>Files</strong></TableCell>
-                                <TableCell sx={{ width: '10%' }}><strong>Feedback</strong></TableCell>
-                                <TableCell sx={{ width: '5%' }}><strong>Status</strong></TableCell>
-                                <TableCell sx={{ width: '5%' }}><strong>Action</strong></TableCell>
+                            <TableRow sx={{ backgroundColor: styles.primaryOrange }}>
+                                <TableCell sx={{ width: '20%', color: styles.offWhite }}><strong>Title</strong></TableCell>
+                                <TableCell sx={{ width: '30%', color: styles.offWhite }}><strong>Content</strong></TableCell>
+                                <TableCell sx={{ width: '15%', color: styles.offWhite }}><strong>Submission Date</strong></TableCell>
+                                <TableCell sx={{ width: '20%', color: styles.offWhite }}><strong>Files</strong></TableCell>
+                                <TableCell sx={{ width: '10%', color: styles.offWhite }}><strong>Feedback</strong></TableCell>
+                                <TableCell sx={{ width: '5%', color: styles.offWhite }}><strong>Status</strong></TableCell>
+                                <TableCell sx={{ width: '5%', color: styles.offWhite }}><strong>Action</strong></TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>

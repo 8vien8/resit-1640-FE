@@ -1,20 +1,29 @@
-export const filterTopics = (topics, statusFilter) => {
-    const today = new Date();
-    const threeDaysFromNow = new Date(today);
-    threeDaysFromNow.setDate(today.getDate() + 3);
+import { FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import PropTypes from 'prop-types';
 
-    return topics.filter((topic) => {
-        const topicEndDate = new Date(topic.endDate);
-        const isExpired = topicEndDate < today;
-        const isSoonToExpire = topicEndDate <= threeDaysFromNow;
-
-        if (statusFilter === 'expired') {
-            return isExpired;
-        } else if (statusFilter === 'soonToExpire') {
-            return isSoonToExpire && !isExpired;
-        } else if (statusFilter === 'active') {
-            return !isExpired && !isSoonToExpire;
-        }
-        return true;
-    });
+const StatusFilter = ({ statusFilter, setStatusFilter }) => {
+    return (
+        <FormControl sx={{ minWidth: '120px' }}>
+            <InputLabel shrink>Status</InputLabel>
+            <Select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                displayEmpty
+            >
+                <MenuItem value="">
+                    <em>All</em>
+                </MenuItem>
+                <MenuItem value="expired">Expired</MenuItem>
+                <MenuItem value="soonToExpire">Soon to Expire</MenuItem>
+                <MenuItem value="active">Active</MenuItem>
+            </Select>
+        </FormControl>
+    );
 };
+
+StatusFilter.propTypes = {
+    statusFilter: PropTypes.string.isRequired,
+    setStatusFilter: PropTypes.func.isRequired,
+};
+
+export { StatusFilter };

@@ -2,13 +2,11 @@ import { useCallback, useContext, useState, useEffect } from "react";
 import { UserContext } from "../../context/UserContext";
 import useTopicService from '../../services/topicService';
 import useUserService from "../../services/userManagementService";
-import {
-    Container, FormControl, Select, MenuItem, InputLabel, Typography,
-    CircularProgress, Box
-} from '@mui/material';
+import { Container, Typography, CircularProgress, Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import TopicsTable from './topic/TopicsTable';
 import UsersTable from "../UMM/faculties/facultyDetail/user/UsersTable";
+import { StatusFilter } from "../utils";
 
 const FMCDashBoard = () => {
     const { user } = useContext(UserContext);
@@ -93,29 +91,17 @@ const FMCDashBoard = () => {
                 </Box>
             ) : (
                 <Container>
-                    <FormControl sx={{ minWidth: 120 }}>
-                        <InputLabel shrink>Status</InputLabel>
-                        <Select
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
-                            displayEmpty
-                        >
-                            <MenuItem value="">
-                                <em>All</em>
-                            </MenuItem>
-                            <MenuItem value="expired">Expired</MenuItem>
-                            <MenuItem value="soonToExpire">Soon to Expire</MenuItem>
-                            <MenuItem value="active">Active</MenuItem>
-                        </Select>
-                    </FormControl>
-
+                    <Typography align='center' variant="h4" gutterBottom >
+                        Welcome <strong>{user.username}</strong>
+                    </Typography>
+                    <StatusFilter statusFilter={statusFilter} setStatusFilter={setStatusFilter} />
                     <TopicsTable
                         topics={filteredTopics}
                         onView={handleView}
                         onUpdate={handleUpdateTopic}
                     />
 
-                    <Typography variant="h6" style={{ marginTop: '1em' }}>Students</Typography>
+                    <Typography variant="h6" style={{ marginTop: '1em' }}>Members</Typography>
                     <UsersTable users={users} />
                 </Container>
             )}

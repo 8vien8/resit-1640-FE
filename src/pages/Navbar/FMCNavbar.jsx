@@ -33,12 +33,11 @@ const navItems = [
 function FMCNavbar() {
     const navigate = useNavigate();
     const [mobileOpen, setMobileOpen] = useState(false);
-    const [isCollapsed, setIsCollapsed] = useState(true); // Initially collapsed
+    const [isCollapsed, setIsCollapsed] = useState(true);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
     useEffect(() => {
-        // Ensure drawer stays collapsed when switching from mobile to larger screens
         if (!isMobile) {
             setIsCollapsed(true);
             setMobileOpen(false);

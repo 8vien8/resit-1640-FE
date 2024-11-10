@@ -1,10 +1,18 @@
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button } from '@mui/material';
 import PropTypes from 'prop-types';
 
+const styles = {
+    primaryBlue: "#2196F3",
+    primaryGreen: "#4CAF50",
+    primaryOrange: "#DD730C",
+    lightGray: "#CCCCCC",
+    white: "#FFFFFF",
+};
+
 const TopicDialog = ({ open, onClose, onSubmit, currentTopic, newTopic, handleFieldChange }) => {
     return (
-        <Dialog open={open} onClose={onClose}>
-            <DialogTitle align="center">{currentTopic ? 'Edit Topic' : 'Create Topic'}</DialogTitle>
+        <Dialog sx={{ borderRadius: 8 }} open={open} onClose={onClose}>
+            <DialogTitle sx={{ mb: 2, backgroundColor: styles.primaryOrange, color: styles.white }} align="center">{currentTopic ? 'Edit Topic' : 'Create Topic'}</DialogTitle>
             <DialogContent>
                 <TextField
                     autoFocus
@@ -18,6 +26,11 @@ const TopicDialog = ({ open, onClose, onSubmit, currentTopic, newTopic, handleFi
                     onChange={handleFieldChange}
                 />
                 <TextField
+                    slotProps={{
+                        inputLabel: {
+                            shrink: true,
+                        }
+                    }}
                     margin="dense"
                     name="releaseDate"
                     label="Release Date"
@@ -28,6 +41,11 @@ const TopicDialog = ({ open, onClose, onSubmit, currentTopic, newTopic, handleFi
                     onChange={handleFieldChange}
                 />
                 <TextField
+                    slotProps={{
+                        inputLabel: {
+                            shrink: true,
+                        }
+                    }}
                     margin="dense"
                     name="endDate"
                     label="End Date"

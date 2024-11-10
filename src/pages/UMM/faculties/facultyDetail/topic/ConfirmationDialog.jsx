@@ -1,11 +1,17 @@
 // ConfirmationDialog.js
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 import PropTypes from 'prop-types';
-
+const styles = {
+    primaryBlue: "#2196F3",
+    primaryGreen: "#4CAF50",
+    primaryOrange: "#DD730C",
+    lightGray: "#CCCCCC",
+    white: "#FFFFFF",
+};
 const ConfirmationDialog = ({ open, onClose, onConfirm, currentTopic }) => {
     return (
         <Dialog open={open} onClose={onClose}>
-            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogTitle sx={{ mb: 2, backgroundColor: styles.primaryOrange, color: styles.white }}>Confirm Deletion</DialogTitle>
             <DialogContent>
                 Are you sure you want to delete this topic <strong>&quot;{currentTopic}&quot;</strong>?
             </DialogContent>

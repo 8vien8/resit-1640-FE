@@ -24,6 +24,7 @@ const FacultyDetailView = () => {
     const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
     const fetchData = useCallback(async () => {
+        setLoading(true);
         try {
             const [userData, topicData] = await Promise.all([
                 userService.getUsersByFaculty(facultyId),
@@ -31,7 +32,6 @@ const FacultyDetailView = () => {
             ]);
             setUsers(userData);
             setTopics(topicData);
-            setHasFetchedData(true);
         } catch (err) {
             setError('Error fetching faculty details. Please try again.');
             console.error(err);
@@ -43,6 +43,7 @@ const FacultyDetailView = () => {
     useEffect(() => {
         if (!hasFetchedData) {
             fetchData();
+            setHasFetchedData(true);
         }
     }, [fetchData, hasFetchedData]);
 
@@ -68,7 +69,7 @@ const FacultyDetailView = () => {
                     <Typography variant="h6" style={{ marginTop: '1em' }}>Topics</Typography>
                     <TopicsTable topics={topics} facultyId={facultyId} onChangeData={fetchData} onNotify={handleNotify} />
 
-                    <Typography variant="h6" style={{ marginTop: '1em' }}>Users</Typography>
+                    <Typography variant="h6" style={{ marginTop: '1em' }}>Members</Typography>
                     <UsersTable users={users} />
                 </>
             )}

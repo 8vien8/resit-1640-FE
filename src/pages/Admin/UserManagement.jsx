@@ -2,15 +2,15 @@ import { useEffect, useState, useCallback } from 'react';
 import useUserService from '../../services/userManagementService';
 import useFacultyService from '../../services/facultiesService';
 import useRoleService from '../../services/rolesService';
-import CreateUserForm from './user/createUserForm';
-import UpdateUserForm from './user/updateUserForm';
+import CreateUserForm from './userManagement/createUserForm';
+import UpdateUserForm from './userManagement/updateUserForm';
 import {
     Button, Modal, Box, CircularProgress, Dialog, DialogTitle,
     DialogContent, DialogActions, DialogContentText, Snackbar
 } from '@mui/material';
 import MuiAlert from '@mui/material/Alert';
-import UserTable from './user/userTable';
-import FilterBar from './user/filterBar';
+import UserTable from './userManagement/userTable';
+import FilterBar from './userManagement/filterBar';
 
 const UserManagement = () => {
     const [users, setUsers] = useState([]);
@@ -136,25 +136,18 @@ const UserManagement = () => {
                 handleFacultyFilterChange={handleFacultyFilterChange}
                 faculties={faculties} />
 
-            <Button sx={{ mb: 2 }} variant="contained" color="primary" onClick={() => setIsCreateUserModalOpen(true)}>
+            <Button sx={{ mb: 2 }} variant="contained" color="success" onClick={() => setIsCreateUserModalOpen(true)}>
                 Create New User
             </Button>
             {/* Create User Modal */}
-            <Modal
-                open={isCreateUserModalOpen}
-                onClose={() => setIsCreateUserModalOpen(false)}
-                sx={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}
+            <Modal open={isCreateUserModalOpen} onClose={() => setIsCreateUserModalOpen(false)}
+                sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', }}
             >
                 <Box
-                    sx={{
-                        p: 4, bgcolor: 'background.paper', width: '400px', maxHeight: '90%', overflowY: 'auto', borderRadius: 2,
-                    }}>
+                    sx={{ p: 4, bgcolor: 'background.paper', width: '400px', maxHeight: '90%', overflowY: 'auto', borderRadius: 2, }}>
                     <CreateUserForm onCreatedUser={handleUserCreated} onClose={() => setIsCreateUserModalOpen(false)} />
                 </Box>
             </Modal>
-
             {/* Update User Modal */}
             <Modal
                 open={isUpdateUserModalOpen}
@@ -163,10 +156,7 @@ const UserManagement = () => {
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
             >
-                <Box
-                    sx={{
-                        p: 4, bgcolor: 'background.paper', width: '400px', maxHeight: '90%', overflowY: 'auto', borderRadius: 2,
-                    }}
+                <Box sx={{ p: 4, bgcolor: 'background.paper', width: '400px', maxHeight: '90%', overflowY: 'auto', borderRadius: 2, }}
                 >
                     {userToUpdate && (
                         <UpdateUserForm
@@ -177,20 +167,17 @@ const UserManagement = () => {
                     )}
                 </Box>
             </Modal>
-
             {/* Loading indicator */}
             {loading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
                     <CircularProgress />
                 </Box>
             ) : (
-                // User table
                 <UserTable
                     filteredUsers={filteredUsers}
                     openUpdateUserModal={openUpdateUserModal}
                     openDeleteConfirmation={openDeleteConfirmation} />
             )}
-
             {/* Delete Confirmation Dialog */}
             <Dialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)}>
                 <DialogTitle>Confirm Deletion</DialogTitle>
@@ -204,7 +191,6 @@ const UserManagement = () => {
                     <Button color="error" onClick={handleDeleteUser}>Delete</Button>
                 </DialogActions>
             </Dialog>
-
             {/* Snackbar for notifications */}
             <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
                 <MuiAlert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>

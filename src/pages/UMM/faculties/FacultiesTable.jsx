@@ -1,4 +1,3 @@
-// FacultyTable.js
 import PropTypes from 'prop-types';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Dialog, DialogActions,
@@ -33,7 +32,7 @@ const FacultyTable = ({ faculties, onViewFaculty, setEditingFaculty, openConfirm
                             <TableCell sx={{ display: 'flex', gap: 1 }}>
                                 <Button variant="contained" sx={{ backgroundColor: styles.primaryGreen }} onClick={() => onViewFaculty(faculty)}>View</Button>
                                 <Button variant="contained" color="secondary" onClick={() => setEditingFaculty(faculty)}>Edit</Button>
-                                <Button variant="outlined" color="error" onClick={() => openConfirmDeleteDialog(faculty)}>Delete</Button>
+                                <Button variant="contained" color="error" onClick={() => openConfirmDeleteDialog(faculty)}>Delete</Button>
                             </TableCell>
                         </TableRow>
                     ))}
@@ -60,7 +59,7 @@ const ConfirmDeleteDialog = ({ open, onClose, onDelete, facultyToDelete }) => {
                 </Typography>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onDelete} color="error" variant="contained">Yes, Delete</Button>
+                <Button onClick={onDelete} color="error" variant="outlined">Yes, Delete</Button>
                 <Button onClick={onClose} color="primary" variant="outlined">Cancel</Button>
             </DialogActions>
         </Dialog>

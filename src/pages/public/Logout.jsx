@@ -22,7 +22,6 @@ const LogoutButton = ({ isMobile, isCollapsed }) => {
         <Box sx={{ display: "flex", justifyContent: "center", m: 2 }}>
             <Tooltip title="Logout" placement="right">
                 {user && (
-                    // Conditionally render Button or IconButton based on isMobile or isCollapsed
                     isMobile || isCollapsed ? (
                         <IconButton color="primary" onClick={handleLogout}>
                             <Logout fontSize="large" />

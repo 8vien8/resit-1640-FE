@@ -12,7 +12,7 @@ const styles = {
 const UsersTable = ({ users }) => {
     return (
         <TableContainer component={Paper} style={{ marginTop: '1em', backgroundColor: styles.offWhite }}>
-            <Table>
+            <Table >
                 <TableHead sx={{ backgroundColor: styles.primaryOrange }}>
                     <TableRow>
                         <TableCell sx={{ fontWeight: 'bold', fontSize: '1.1rem', color: 'white' }}>Avatar</TableCell>
@@ -23,16 +23,20 @@ const UsersTable = ({ users }) => {
                 </TableHead>
                 <TableBody>
                     {users.length > 0 ? (
-                        users.map(user => (
-                            <TableRow key={user._id} sx={{ '&:hover': { backgroundColor: styles.lightGray } }}>
-                                <TableCell>
-                                    <Avatar alt={user.username} src={user.avatar} />
-                                </TableCell>
-                                <TableCell sx={{ color: styles.primaryBlue }}>{user.username}</TableCell>
-                                <TableCell>{user.email}</TableCell>
-                                <TableCell sx={{ fontWeight: 'bold', color: styles.primaryGreen }}>{user.roleID?.roleName}</TableCell>
-                            </TableRow>
-                        ))
+                        users
+                            .filter(user => user.roleID?.roleName !== "Admin")
+                            .map(user => (
+                                <TableRow key={user._id} sx={{ '&:hover': { backgroundColor: styles.lightGray } }}>
+                                    <TableCell>
+                                        <Avatar alt={user.username} src={user.avatar} />
+                                    </TableCell>
+                                    <TableCell sx={{ color: styles.primaryBlue }}>{user.username}</TableCell>
+                                    <TableCell>{user.email}</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', color: styles.primaryGreen }}>
+                                        {user.roleID?.roleName}
+                                    </TableCell>
+                                </TableRow>
+                            ))
                     ) : (
                         <TableRow>
                             <TableCell colSpan={4} align="center" sx={{ fontStyle: 'italic', color: styles.lightGray }}>

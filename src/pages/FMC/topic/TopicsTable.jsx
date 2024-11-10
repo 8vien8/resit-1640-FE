@@ -2,7 +2,7 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    Paper, Button, Box, Dialog, DialogTitle, DialogContent, DialogActions, TextField
+    Paper, Button, Box, Dialog, DialogTitle, DialogContent, DialogActions, TextField,
 } from '@mui/material';
 
 const TopicsTable = ({ topics, onView, onUpdate }) => {
@@ -31,7 +31,7 @@ const TopicsTable = ({ topics, onView, onUpdate }) => {
 
     const handleUpdate = async () => {
         if (currentTopic) {
-            await onUpdate(currentTopic._id, updatedTopic); // Call update function passed as a prop
+            await onUpdate(currentTopic._id, updatedTopic);
             handleCloseDialog();
         }
     };
@@ -45,23 +45,30 @@ const TopicsTable = ({ topics, onView, onUpdate }) => {
 
         return { ...topic, isExpired, isSoonToExpire };
     }).sort((a, b) => {
-        // Sorting logic as before
         if (!a.isExpired && !a.isSoonToExpire && (b.isExpired || b.isSoonToExpire)) return -1;
         if (!b.isExpired && !b.isSoonToExpire && (a.isExpired || a.isSoonToExpire)) return 1;
         if (a.isSoonToExpire && b.isExpired) return -1;
         return 0;
     });
 
+    const styles = {
+        primaryBlue: "#2196F3",
+        primaryGreen: "#4CAF50",
+        primaryOrange: "#DD730C",
+        lightGray: "#CCCCCC",
+        offWhite: "#FFFFFF",
+    };
+
     return (
-        <>
+        <div>
             <TableContainer component={Paper} style={{ marginTop: '1em' }}>
                 <Table>
-                    <TableHead>
+                    <TableHead sx={{ backgroundColor: styles.primaryOrange }}>
                         <TableRow>
-                            <TableCell sx={{ width: '40%', fontSize: '1.1rem' }}>Topic Name</TableCell>
-                            <TableCell sx={{ width: '22%', fontSize: '1.1rem' }}>Release Date</TableCell>
-                            <TableCell sx={{ width: '22%', fontSize: '1.1rem' }}>End Date</TableCell>
-                            <TableCell sx={{ width: '16%', fontSize: '1.1rem', textAlign: 'center' }}>Actions</TableCell>
+                            <TableCell sx={{ width: '40%', fontSize: '1.1rem', color: styles.offWhite }}>Topic Name</TableCell>
+                            <TableCell sx={{ width: '22%', fontSize: '1.1rem', color: styles.offWhite }}>Release Date</TableCell>
+                            <TableCell sx={{ width: '22%', fontSize: '1.1rem', color: styles.offWhite }}>End Date</TableCell>
+                            <TableCell sx={{ width: '16%', fontSize: '1.1rem', color: styles.offWhite, textAlign: 'center' }}>Actions</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -70,6 +77,7 @@ const TopicsTable = ({ topics, onView, onUpdate }) => {
                                 <TableRow
                                     key={topic._id}
                                     sx={{
+                                        '&:hover': { backgroundColor: styles.lightGray },
                                         backgroundColor: topic.isExpired ? 'rgba(255, 0, 0, 0.2)' :
                                             topic.isSoonToExpire ? 'rgba(0, 128, 0, 0.2)' : 'inherit'
                                     }}
@@ -85,8 +93,8 @@ const TopicsTable = ({ topics, onView, onUpdate }) => {
                                     </TableCell>
                                     <TableCell>
                                         <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
-                                            <Button variant="outlined" onClick={() => onView(topic)}>View</Button>
-                                            <Button variant="outlined" onClick={() => handleOpenDialog(topic)}>Update</Button>
+                                            <Button variant="contained" onClick={() => onView(topic)}>View</Button>
+                                            <Button variant="contained" color='success' onClick={() => handleOpenDialog(topic)}>Update</Button>
                                         </Box>
                                     </TableCell>
                                 </TableRow>
@@ -102,9 +110,14 @@ const TopicsTable = ({ topics, onView, onUpdate }) => {
 
             {/* Update Topic Dialog */}
             <Dialog open={openDialog} onClose={handleCloseDialog}>
-                <DialogTitle align="center">Update Topic: {updatedTopic.topicName}</DialogTitle>
+                <DialogTitle sx={{ backgroundColor: styles.primaryOrange, color: styles.offWhite, mb: 1 }} align="center">Update deadline for Topic: {updatedTopic.topicName}</DialogTitle>
                 <DialogContent>
                     <TextField
+                        slotProps={{
+                            inputLabel: {
+                                shrink: true
+                            }
+                        }}
                         margin="dense"
                         label="End Date"
                         type="datetime-local"
@@ -113,12 +126,12 @@ const TopicsTable = ({ topics, onView, onUpdate }) => {
                         fullWidth
                     />
                 </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleCloseDialog} color="secondary">Cancel</Button>
-                    <Button onClick={handleUpdate} color="primary">Update</Button>
+                <DialogActions sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+                    <Button onClick={handleCloseDialog} color="primary">Cancel</Button>
+                    <Button onClick={handleUpdate} color="success">Update</Button>
                 </DialogActions>
             </Dialog>
-        </>
+        </div>
     );
 };
 

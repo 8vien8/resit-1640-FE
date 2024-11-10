@@ -47,9 +47,14 @@ const CreateUserForm = ({ onCreatedUser }) => {
         fetchData();
     }, [roleService, facultiesService, dataFetched]);
 
+    const isValidEmail = (email) => {
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@gmail\.com$/; 
+        return emailPattern.test(email);
+    };
+
     const handleCreate = async (e) => {
         e.preventDefault();
-        if (Object.values(formData).some(value => !value)) {
+        if (Object.values(formData).some(value => !value) || !isValidEmail(formData.email)) {
             setShowError(true);
             return;
         }
@@ -140,7 +145,7 @@ const CreateUserForm = ({ onCreatedUser }) => {
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
             >
                 <Alert severity="error" onClose={() => setShowError(false)}>
-                    Please fill out all required fields.
+                    {Object.values(formData).some(value => !value) ? "Please fill out all required fields." : "Email must be a valid Gmail address."}
                 </Alert>
             </Snackbar>
         </Box>

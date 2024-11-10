@@ -113,27 +113,20 @@ const TopicsTable = ({ topics, facultyId, onChangeData, onNotify }) => {
         navigate(`/umm/topic/${topic._id}/${topicName}/contributions`);
     };
 
-    const filterTopics = (topics) => {
+    const sortedTopics = topics.map((topic) => {
         const today = new Date();
         const threeDaysFromNow = new Date(today);
         threeDaysFromNow.setDate(today.getDate() + 3);
+        const isExpired = new Date(topic.endDate) < today;
+        const isSoonToExpire = new Date(topic.endDate) <= threeDaysFromNow;
 
-        return topics.filter((topic) => {
-            const topicEndDate = new Date(topic.endDate);
-            const isExpired = topicEndDate < today;
-            const isSoonToExpire = topicEndDate <= threeDaysFromNow;
-
-            if (statusFilter === 'expired') {
-                return isExpired;
-            } else if (statusFilter === 'soonToExpire') {
-                return isSoonToExpire && !isExpired;
-            } else if (statusFilter === 'active') {
-                return !isExpired && !isSoonToExpire;
-            }
-            return true;
-        });
-    };
-    const filteredTopics = filterTopics(topics);
+        return { ...topic, isExpired, isSoonToExpire };
+    }).sort((a, b) => {
+        if (!a.isExpired && !a.isSoonToExpire && (b.isExpired || b.isSoonToExpire)) return -1;
+        if (!b.isExpired && !b.isSoonToExpire && (a.isExpired || a.isSoonToExpire)) return 1;
+        if (a.isSoonToExpire && b.isExpired) return -1;
+        return 0;
+    });
 
     return (
         <div>
@@ -154,53 +147,37 @@ const TopicsTable = ({ topics, facultyId, onChangeData, onNotify }) => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {filteredTopics.length > 0 ? (
-                            filteredTopics
-                                .map((topic) => {
-                                    const today = new Date();
-                                    const threeDaysFromNow = new Date(today);
-                                    threeDaysFromNow.setDate(today.getDate() + 3);
-                                    const isExpired = new Date(topic.endDate) < today;
-                                    const isSoonToExpire = new Date(topic.endDate) <= threeDaysFromNow;
-                                    return { ...topic, isExpired, isSoonToExpire };
-                                })
-                                .sort((a, b) => {
-                                    if (!a.isExpired && !a.isSoonToExpire && (b.isExpired || b.isSoonToExpire)) return -1;
-                                    if (!b.isExpired && !b.isSoonToExpire && (a.isExpired || a.isSoonToExpire)) return 1;
-                                    if (a.isSoonToExpire && b.isExpired) return -1;
-                                    if (a.isExpired && b.isSoonToExpire) return 1;
-                                    return 0;
-                                })
-                                .map((topic) => {
-                                    return (
-                                        <TableRow
-                                            key={topic._id}
-                                            sx={{
-                                                '&:hover': { backgroundColor: styles.lightGray },
-                                                backgroundColor: topic.isExpired ? 'rgba(255, 0, 0, 0.2)' :
-                                                    topic.isSoonToExpire ? 'rgba(0, 128, 0, 0.2)' :
-                                                        'inherit'
-                                            }}
-                                        >
-                                            <TableCell>{topic.topicName}</TableCell>
-                                            <TableCell>
-                                                <strong>{new Date(topic.releaseDate).toLocaleDateString()}</strong>
-                                                {' at ' + new Date(topic.releaseDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                            </TableCell>
-                                            <TableCell>
-                                                <strong>{new Date(topic.endDate).toLocaleDateString()}</strong>
-                                                {' at ' + new Date(topic.endDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
-                                                    <Button variant="contained" onClick={() => handleView(topic)}>View</Button>
-                                                    <Button variant="contained" color="success" onClick={() => handleClickOpen(topic)}>Edit</Button>
-                                                    <Button variant="contained" color="error" onClick={() => handleDelete(topic)}>Delete</Button>
-                                                </Box>
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })
+                        {sortedTopics.length > 0 ? (
+                            sortedTopics.map((topic) => {
+                                return (
+                                    <TableRow
+                                        key={topic._id}
+                                        sx={{
+                                            '&:hover': { backgroundColor: styles.lightGray },
+                                            backgroundColor: topic.isExpired ? 'rgba(255, 0, 0, 0.2)' :
+                                                topic.isSoonToExpire ? 'rgba(0, 128, 0, 0.2)' :
+                                                    'inherit'
+                                        }}
+                                    >
+                                        <TableCell>{topic.topicName}</TableCell>
+                                        <TableCell>
+                                            <strong>{new Date(topic.releaseDate).toLocaleDateString()}</strong>
+                                            {' at ' + new Date(topic.releaseDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </TableCell>
+                                        <TableCell>
+                                            <strong>{new Date(topic.endDate).toLocaleDateString()}</strong>
+                                            {' at ' + new Date(topic.endDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
+                                                <Button variant="contained" onClick={() => handleView(topic)}>View</Button>
+                                                <Button variant="contained" color="success" onClick={() => handleClickOpen(topic)}>Edit</Button>
+                                                <Button variant="contained" color="error" onClick={() => handleDelete(topic)}>Delete</Button>
+                                            </Box>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })
                         ) : (
                             <TableRow>
                                 <TableCell colSpan={4} align="center">No topics found.</TableCell>

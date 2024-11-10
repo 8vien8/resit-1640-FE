@@ -158,7 +158,7 @@ const UpdateContribution = ({ open, onClose, contribution, onUpdate }) => {
                         </label>
                     </Box>
                     <Box mt={2} align="center" display="flex" justifyContent="space-between">
-                        <Button onClick={onClose} color="error" variant="outlined">
+                        <Button onClick={onClose} color="error" variant="contained">
                             Cancel
                         </Button>
                         <Button onClick={handleSubmit} color="primary" variant="contained">

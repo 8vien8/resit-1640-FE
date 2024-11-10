@@ -8,7 +8,7 @@ const LoginPage = () => {
     const { user, login } = useContext(UserContext);
     const [credentials, setCredentials] = useState({ email: "", password: "" });
     const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(false); // Loading state for login process
+    const [loading, setLoading] = useState(false);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -18,7 +18,7 @@ const LoginPage = () => {
     const handleLogin = async (event) => {
         event.preventDefault();
         setError(null);
-        setLoading(true); // Start loading
+        setLoading(true);
 
         try {
             const response = await loginService.login(credentials);
@@ -33,7 +33,7 @@ const LoginPage = () => {
             setError("Invalid email or password.");
             console.error("Login error:", error);
         } finally {
-            setLoading(false); // Stop loading
+            setLoading(false);
         }
     };
 
@@ -122,7 +122,7 @@ const LoginPage = () => {
                             type="submit"
                             variant="contained"
                             sx={{ mt: 2, mb: 2, px: 4, boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.6)' }}
-                            disabled={loading} // Disable button while loading
+                            disabled={loading}
                         >
                             {loading ? <CircularProgress size={24} /> : "Login"}
                         </Button>

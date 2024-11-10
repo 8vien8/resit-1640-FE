@@ -39,15 +39,14 @@ const useFacultyService = () => {
         try {
             const response = await axios.post(FACULTIES_URL, { facultyName }, {
                 headers: {
-                    Authorization: `Bearer ${token}`, // Ensure token is defined
+                    Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
             });
-            return response.data; // Return the created faculty data
+            return response.data; 
         } catch (error) {
-            // Log the entire error response to understand the issue
             console.error('Error creating faculty:', error.response || error.message);
-            throw error; // Rethrow for handling in the component
+            throw error;
         }
     };
 
