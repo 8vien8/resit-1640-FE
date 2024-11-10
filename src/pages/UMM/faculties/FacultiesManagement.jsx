@@ -2,23 +2,36 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useFacultyService from '../../../services/facultiesService';
 import {
-    Container, Typography, TextField, Button, Snackbar, Alert, Dialog, DialogActions, DialogContent, DialogTitle
+    Container, Box, Typography, TextField, Button, Snackbar, Alert, Dialog, DialogActions,
+    DialogContent, DialogTitle,
+    CircularProgress
 } from '@mui/material';
 import { FacultyTable, ConfirmDeleteDialog } from './FacultiesTable';
 
+const styles = {
+    primaryOrange: "#DD730C",
+    primaryGreen: "#4CAF50",
+    primaryBlue: "#2196F3",
+    lightGray: "#B0BEC5",
+    offWhite: "#F5F5F5",
+};
+
 const FacultiesManagement = () => {
+    const navigate = useNavigate();
+    const facultyService = useFacultyService();
     const [hasFetchedData, setHasFetchedData] = useState(false);
     const [facultyName, setFacultyName] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
     const [faculties, setFaculties] = useState([]);
     const [editingFaculty, setEditingFaculty] = useState(null);
     const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] = useState(false);
     const [facultyToDelete, setFacultyToDelete] = useState(null);
     const [error, setError] = useState(null);
     const [successMessage, setSuccessMessage] = useState('');
-    const facultyService = useFacultyService();
-    const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState(false);
 
     const fetchData = useCallback(async () => {
+        setIsLoading(true)
         try {
             const facultyList = await facultyService.getFaculties();
             setFaculties(facultyList);
@@ -26,13 +39,14 @@ const FacultiesManagement = () => {
             setError('Error fetching faculties. Please try again.');
             console.log(err);
         } finally {
-            setHasFetchedData(true);
+            setIsLoading(false);
         }
     }, [facultyService]);
 
     useEffect(() => {
         if (!hasFetchedData) {
             fetchData();
+            setHasFetchedData(true);
         }
     }, [fetchData, hasFetchedData]);
 
@@ -81,26 +95,45 @@ const FacultiesManagement = () => {
     const handleViewFaculty = (faculty) => {
         const encodedFacultyName = encodeURIComponent(faculty.facultyName);
         navigate(`/umm/faculty/${faculty._id}/${encodedFacultyName}`);
-    }
+    };
 
     const resetCreateForm = () => {
         setFacultyName('');
         setError(null);
     };
-    return (
-        <Container>
-            <Typography variant="h4" gutterBottom>Faculties Management</Typography>
 
-            <Typography variant="h6" style={{ marginTop: '1em' }}>Add New Faculty</Typography>
+    const filteredFaculties = faculties.filter(faculty =>
+        faculty.facultyName.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    return (
+        <Container sx={{ padding: '20px', backgroundColor: styles.offWhite, borderRadius: '8px', boxShadow: 3 }}>
+            <Typography align='center' variant="h4" gutterBottom sx={{ color: styles.primaryBlue }}>
+                Faculties Management
+            </Typography>
+
+            <Typography variant="h6" sx={{ marginTop: '1em', color: styles.primaryOrange }}>Create New Faculty</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <TextField
+                    label="Input new Faculty name"
+                    variant="outlined"
+                    value={facultyName}
+                    onChange={(e) => setFacultyName(e.target.value)}
+                    margin="normal"
+
+                />
+                <Button size='large' variant="contained" onClick={handleCreateFaculty} sx={{ backgroundColor: styles.primaryGreen }}>
+                    Create
+                </Button>
+            </Box>
+
             <TextField
-                label="Faculty Name"
+                label="Search Faculty"
                 variant="outlined"
-                value={facultyName}
-                onChange={(e) => setFacultyName(e.target.value)}
-                fullWidth
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 margin="normal"
             />
-            <Button variant="contained" color="primary" onClick={handleCreateFaculty}>Create</Button>
 
             <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError(null)}>
                 <Alert onClose={() => setError(null)} severity="error">{error}</Alert>
@@ -109,16 +142,20 @@ const FacultiesManagement = () => {
                 <Alert onClose={() => setSuccessMessage('')} severity="success">{successMessage}</Alert>
             </Snackbar>
 
-            <FacultyTable
-                faculties={faculties}
-                setEditingFaculty={setEditingFaculty}
-                openConfirmDeleteDialog={openConfirmDeleteDialog}
-                onViewFaculty={handleViewFaculty}
-            />
+            {isLoading ? (
+                <CircularProgress />
+            ) : (
+                <FacultyTable
+                    faculties={filteredFaculties}
+                    setEditingFaculty={setEditingFaculty}
+                    openConfirmDeleteDialog={openConfirmDeleteDialog}
+                    onViewFaculty={handleViewFaculty}
+                />
+            )}
 
             {editingFaculty && (
                 <Dialog open={Boolean(editingFaculty)} onClose={() => setEditingFaculty(null)}>
-                    <DialogTitle>Edit Faculty</DialogTitle>
+                    <DialogTitle align='center'>Edit Faculty</DialogTitle>
                     <DialogContent>
                         <TextField
                             label="Faculty Name"
@@ -141,7 +178,6 @@ const FacultiesManagement = () => {
                 onDelete={handleDeleteFaculty}
                 open={confirmDeleteDialogOpen}
                 onClose={() => setConfirmDeleteDialogOpen(false)}
-                onConfirm={handleDeleteFaculty}
                 facultyName={facultyToDelete?.facultyName}
             />
         </Container>

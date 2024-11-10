@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { FormControl, Button, InputLabel, Select, MenuItem, CircularProgress } from "@mui/material";
 import { CloudUpload } from "@mui/icons-material";
 
-const AvatarUpload = ({ avatarPreview, onAvatarChange }) => (
+const AvatarUpload = ({ avatarPreview, onAvatarChange, disabled }) => (
     <FormControl fullWidth required sx={{ mb: 2, display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
         {avatarPreview && (
             <img
@@ -13,14 +13,16 @@ const AvatarUpload = ({ avatarPreview, onAvatarChange }) => (
             />
         )}
         <Button
+            disabled={disabled}
             variant="contained"
             color="primary"
             component="label"
             sx={{ textTransform: 'none', padding: '6px 10px', fontSize: '0.9rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
             startIcon={<CloudUpload />}
         >
-            Choose an Avatar
+            {disabled ? 'Uploading...' : 'Upload Avatar'}
             <input
+                disabled={disabled}
                 type="file"
                 accept="image/*"
                 onChange={onAvatarChange}
@@ -32,11 +34,12 @@ const AvatarUpload = ({ avatarPreview, onAvatarChange }) => (
 AvatarUpload.propTypes = {
     avatarPreview: PropTypes.string,
     onAvatarChange: PropTypes.func.isRequired,
+    disabled: PropTypes.bool,
 };
 
 
-const SelectField = ({ label, value, onChange, options, fetchingData }) => (
-    <FormControl fullWidth required sx={{ mb: 2 }}>
+const SelectField = ({ label, value, onChange, options, fetchingData, disabled }) => (
+    <FormControl fullWidth required sx={{ mb: 2 }} disabled={disabled}>
         <InputLabel>{label}</InputLabel>
         <Select value={value} onChange={onChange}>
             {fetchingData ? (
@@ -60,6 +63,7 @@ SelectField.propTypes = {
     onChange: PropTypes.func.isRequired,
     options: PropTypes.arrayOf(PropTypes.object).isRequired,
     fetchingData: PropTypes.bool.isRequired,
+    disabled: PropTypes.bool,
 }
 
 export {

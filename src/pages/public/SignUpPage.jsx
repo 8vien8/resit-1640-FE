@@ -1,16 +1,15 @@
 import { useState } from "react";
 import { TextField, Button, Container, Box, Typography, Alert, Stack } from "@mui/material";
-import signupService from "../../services/signupService"; // Call API service for sign-up
-import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
+import signupService from "../../services/signupService";
+import { Link, useNavigate } from "react-router-dom";
 
 const SignUpPage = () => {
     const [userData, setUserData] = useState({ email: "", username: "" });
-    const [isSignedUp, setIsSignedUp] = useState(false); // Đã đăng ký thành công chưa
+    const [isSignedUp, setIsSignedUp] = useState(false); 
     const [error, setError] = useState(null);
     const [successMessage, setSuccessMessage] = useState("");
 
-    const navigate = useNavigate(); // Sử dụng useNavigate cho điều hướng
-
+    const navigate = useNavigate();
     const handleInputChange = (e) => {
         setUserData({ ...userData, [e.target.name]: e.target.value });
     };
@@ -20,10 +19,9 @@ const SignUpPage = () => {
         setError(null);
 
         try {
-            // Call the signup API
             await signupService.signup(userData);
             setSuccessMessage("Registration successful. Please check your email for further instructions.");
-            setIsSignedUp(true); // Đánh dấu đăng ký thành công
+            setIsSignedUp(true);
         } catch (error) {
             setError("Signup failed, please ensure all details are correct or email might already exist.");
             console.log(error);
@@ -31,7 +29,7 @@ const SignUpPage = () => {
     };
 
     const handleConfirm = () => {
-        navigate("/login"); // Điều hướng sang trang login khi nhấn nút Confirm
+        navigate("/login");
     };
 
     return (

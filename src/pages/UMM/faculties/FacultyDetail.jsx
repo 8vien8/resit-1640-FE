@@ -1,15 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import {
-    Container,
-    Typography,
-    CircularProgress,
-    Alert,
+    Container, Typography, CircularProgress, Alert, Snackbar,
 } from '@mui/material';
 import useTopicService from '../../../services/topicService';
 import useUserService from '../../../services/userManagementService';
-import TopicsTable from './facultyDetail/TopicsTable';
-import UsersTable from './facultyDetail/UsersTable';
+import TopicsTable from './facultyDetail/topic/TopicsTable';
+import UsersTable from './facultyDetail/user/UsersTable';
 
 const FacultyDetailView = () => {
     const { facultyId, facultyName } = useParams();
@@ -22,26 +19,43 @@ const FacultyDetailView = () => {
     const [error, setError] = useState(null);
     const [hasFetchedData, setHasFetchedData] = useState(false);
 
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+
+    const fetchData = useCallback(async () => {
+        setLoading(true);
+        try {
+            const [userData, topicData] = await Promise.all([
+                userService.getUsersByFaculty(facultyId),
+                topicService.getTopicByFacultyId(facultyId)
+            ]);
+            setUsers(userData);
+            setTopics(topicData);
+        } catch (err) {
+            setError('Error fetching faculty details. Please try again.');
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    }, [facultyId, topicService, userService]);
+
     useEffect(() => {
-        const fetchData = async () => {
-            if (!hasFetchedData) {
-                try {
-                    const [userData, topicData] = await Promise.all([
-                        userService.getUsersByFaculty(facultyId),
-                        topicService.getTopicByFacultyId(facultyId)
-                    ]);
-                    setUsers(userData);
-                    setTopics(topicData);
-                    setHasFetchedData(true);
-                } catch (err) {
-                    setError('Error fetching faculty details. Please try again.', err);
-                } finally {
-                    setLoading(false);
-                }
-            }
-        };
-        fetchData();
-    }, [facultyId, topicService, userService, hasFetchedData]);
+        if (!hasFetchedData) {
+            fetchData();
+            setHasFetchedData(true);
+        }
+    }, [fetchData, hasFetchedData]);
+
+    const handleCloseSnackbar = () => {
+        setSnackbarOpen(false);
+    };
+
+    const handleNotify = (message, severity) => {
+        setSnackbarMessage(message);
+        setSnackbarSeverity(severity);
+        setSnackbarOpen(true);
+    };
 
     return (
         <Container>
@@ -53,12 +67,23 @@ const FacultyDetailView = () => {
             ) : (
                 <>
                     <Typography variant="h6" style={{ marginTop: '1em' }}>Topics</Typography>
-                    <TopicsTable topics={topics} /> {/* Use TopicsTable component */}
+                    <TopicsTable topics={topics} facultyId={facultyId} onChangeData={fetchData} onNotify={handleNotify} />
 
-                    <Typography variant="h6" style={{ marginTop: '1em' }}>Users:</Typography>
-                    <UsersTable users={users} /> {/* Use UsersTable component */}
+                    <Typography variant="h6" style={{ marginTop: '1em' }}>Members</Typography>
+                    <UsersTable users={users} />
                 </>
             )}
+
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={6000}
+                onClose={handleCloseSnackbar}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+            >
+                <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </Container>
     );
 };

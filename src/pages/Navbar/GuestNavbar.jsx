@@ -1,21 +1,10 @@
 import { useState, useEffect } from 'react';
 import {
-    Drawer,
-    List,
-    ListItemButton,
-    ListItemIcon,
-    ListItemText,
-    Toolbar,
-    Box,
-    IconButton,
-    Divider,
-    Tooltip,
+    Drawer, List, ListItemButton, ListItemIcon, ListItemText, Toolbar, Box, IconButton,
+    Divider, Tooltip,
 } from '@mui/material';
 import {
-    Dashboard,
-    Menu,
-    ChevronLeft,
-    AccountCircle,
+    Dashboard, Menu, ChevronLeft, AccountCircle,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
@@ -26,14 +15,14 @@ const drawerWidth = 200;
 const drawerWidthCollapsed = 80;
 
 const navItems = [
-    { label: 'Dashboard', icon: <Dashboard fontSize='large' />, path: '/student' },
-    { label: 'Profile', icon: <AccountCircle fontSize='large' />, path: '/student/profile' },
+    { label: 'Dashboard', icon: <Dashboard fontSize='large' />, path: '/guest' },
+    { label: 'Profile', icon: <AccountCircle fontSize='large' />, path: '/guest/profile' },
 ];
 
-function StudentNavbar() {
+function GuestNavbar() {
     const navigate = useNavigate();
     const [mobileOpen, setMobileOpen] = useState(false);
-    const [isCollapsed, setIsCollapsed] = useState(true); 
+    const [isCollapsed, setIsCollapsed] = useState(true);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -117,4 +106,4 @@ function StudentNavbar() {
     );
 }
 
-export default StudentNavbar;
+export default GuestNavbar;

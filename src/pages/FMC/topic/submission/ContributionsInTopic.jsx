@@ -1,36 +1,45 @@
 import { useState, useEffect, useCallback, } from "react";
-import { useContext } from "react";
-import { UserContext } from "../../context/UserContext";
-import useContributionService from "../../services/contributionsServices";
+import { useParams } from "react-router-dom";
+import useContributionService from "../../../../services/contributionsServices";
 import {
     Table, TableBody, TableCell, TableContainer, TableHead,
     TableRow, Paper, Typography, List, ListItem,
-    ListItemIcon, ListItemText, Container, CircularProgress, useTheme
+    ListItemIcon, ListItemText, Container, Button, Snackbar, Alert,
+    CircularProgress, useTheme
 } from '@mui/material';
-import wordIcon from '../../assets/word.ico';
-import imageIcon from '../../assets/image.ico';
-import defaultIcon from '../../assets/default.ico';
-import pdfIcon from '../../assets/pdf.ico';
+import wordIcon from '../../../../assets/word.ico';
+import imageIcon from '../../../../assets/image.ico';
+import defaultIcon from '../../../../assets/default.ico';
+import pdfIcon from '../../../../assets/pdf.ico';
+import GradingContribution from "./GradingContribution";
 
-const GuestDashboard = () => {
-    const { user } = useContext(UserContext);
+const TopicDetail = () => {
+    const { topicId, topicName, endDate } = useParams();
     const [contributions, setContributions] = useState([]);
     const contributionsService = useContributionService();
 
     const [loading, setLoading] = useState(false);
+    const [open, setOpen] = useState(false);
+    const [selectedContribution, setSelectedContribution] = useState(null);
+    const [snackbarState, setSnackbarState] = useState({
+        open: false,
+        message: '',
+        severity: 'success'
+    });
     const [hasFetchedData, setHasFetchedData] = useState(false);
 
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await contributionsService.getContributions();
+            const data = await contributionsService.getContributionByTopicId(topicId);
             setContributions(data);
         } catch (error) {
             console.error("Error fetching contributions: ", error);
+            setSnackbarState({ open: true, message: 'Error fetching contributions.', severity: 'error' });
         } finally {
             setLoading(false);
         }
-    }, [contributionsService]);
+    }, [contributionsService, topicId]);
 
     useEffect(() => {
         if (!hasFetchedData) {
@@ -38,6 +47,32 @@ const GuestDashboard = () => {
             setHasFetchedData(true);
         }
     }, [fetchData, hasFetchedData]);
+
+    const handleOpen = (contribution) => {
+        setSelectedContribution(contribution);
+        setOpen(true);
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+        setSelectedContribution(null);
+    };
+
+    const handleUpdate = async ({ id, data }) => {
+        try {
+            await contributionsService.updateContribution(id, data);
+            fetchData();
+            handleClose();
+            setSnackbarState({ open: true, message: 'Contribution updated successfully.', severity: 'success' });
+        } catch (error) {
+            console.error("Error updating contribution: ", error);
+            setSnackbarState({ open: true, message: 'Error updating contribution.', severity: 'error' });
+        }
+    };
+
+    const handleSnackbarClose = () => {
+        setSnackbarState({ ...snackbarState, open: false });
+    };
 
     const getFileIcon = (fileType) => {
         const iconMap = {
@@ -65,29 +100,35 @@ const GuestDashboard = () => {
     };
 
     const renderContributionRows = () => {
-        return contributions
-            .filter(contribution => contribution.statusID?.statusName === 'Approved')
-            .map((contribution) => (
-                <TableRow key={contribution._id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 }, '&:hover': { backgroundColor: styles.lightGray } }}>
-                    <TableCell>
-                        <Typography variant="body1" fontWeight="bold" color={styles.primaryBlue}>
-                            {contribution.title}
-                        </Typography>
-                    </TableCell>
-                    <TableCell>
-                        <Typography variant="body2" sx={{ maxWidth: 200, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                            {contribution.content}
-                        </Typography>
-                    </TableCell>
-                    <TableCell>{renderFiles(contribution.files)}</TableCell>
-                    <TableCell>{contribution.comments}</TableCell>
-                    <TableCell >
-                        <Typography variant="body2" fontWeight="bold" color={getStatusColor(contribution.statusID?.statusName)}>
-                            {contribution.statusID?.statusName}
-                        </Typography>
-                    </TableCell>
-                </TableRow>
-            ));
+        return contributions.map((contribution) => (
+            <TableRow key={contribution._id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 }, '&:hover': { backgroundColor: styles.lightGray } }}>
+                <TableCell>
+                    <Typography variant="body1" fontWeight="bold" color={styles.primaryBlue}>
+                        {contribution.title}
+                    </Typography>
+                </TableCell>
+                <TableCell>
+                    <Typography variant="body2" sx={{ maxWidth: 200, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                        {contribution.content}
+                    </Typography>
+                </TableCell>
+                <TableCell>{new Date(contribution.submissionDate).toLocaleString()}</TableCell>
+                <TableCell>{renderFiles(contribution.files)}</TableCell>
+                <TableCell>{contribution.comments}</TableCell>
+                <TableCell >
+                    <Typography variant="body2" fontWeight="bold" color={getStatusColor(contribution.statusID?.statusName)}>
+                        {contribution.statusID?.statusName}
+                    </Typography>
+                </TableCell>
+                <TableCell>
+                    {new Date(endDate) > new Date() && (
+                        <Button onClick={() => handleOpen(contribution)} variant="contained" color="primary">
+                            Grade
+                        </Button>
+                    )}
+                </TableCell>
+            </TableRow>
+        ));
     };
 
     const renderFiles = (files) => (
@@ -123,9 +164,10 @@ const GuestDashboard = () => {
 
     return (
         <Container sx={{ padding: '20px', backgroundColor: styles.offWhite, borderRadius: '8px', boxShadow: theme.shadows[3] }}>
-            <Typography variant="h4" gutterBottom align="center">
-                Welcome {user.username}
+            <Typography variant="h4" gutterBottom align="center" sx={{ color: styles.primaryBlue }}>
+                Topic: <strong>{topicName} </strong>
             </Typography>
+
             {loading ? (
                 <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
                     <CircularProgress />
@@ -137,9 +179,11 @@ const GuestDashboard = () => {
                             <TableRow sx={{ backgroundColor: styles.primaryOrange }}>
                                 <TableCell sx={{ width: '20%', color: styles.offWhite }}><strong >Title</strong></TableCell>
                                 <TableCell sx={{ width: '30%', color: styles.offWhite }}><strong >Content</strong></TableCell>
+                                <TableCell sx={{ width: '15%', color: styles.offWhite }}><strong >Submission Date</strong></TableCell>
                                 <TableCell sx={{ width: '20%', color: styles.offWhite }}><strong >Files</strong></TableCell>
                                 <TableCell sx={{ width: '10%', color: styles.offWhite }}><strong >Feedback</strong></TableCell>
                                 <TableCell sx={{ width: '5%', color: styles.offWhite }}><strong >Status</strong></TableCell>
+                                <TableCell sx={{ width: '5%', color: styles.offWhite }}><strong>Action</strong></TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -152,8 +196,21 @@ const GuestDashboard = () => {
                     No contributions found for this topic.
                 </Typography>
             )}
+            {selectedContribution && (
+                <GradingContribution
+                    open={open}
+                    onClose={handleClose}
+                    contribution={selectedContribution}
+                    onUpdate={handleUpdate}
+                />
+            )}
+            <Snackbar open={snackbarState.open} autoHideDuration={6000} onClose={handleSnackbarClose}>
+                <Alert onClose={handleSnackbarClose} severity={snackbarState.severity}>
+                    {snackbarState.message}
+                </Alert>
+            </Snackbar>
         </Container>
     );
 };
 
-export default GuestDashboard;
+export default TopicDetail;

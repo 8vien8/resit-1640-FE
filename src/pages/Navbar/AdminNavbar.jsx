@@ -1,24 +1,10 @@
 import { useState, useEffect } from 'react';
 import {
-  Drawer,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Toolbar,
-  Box,
-  IconButton,
-  Divider,
-  Tooltip,
+  Drawer, List, ListItemButton, ListItemIcon, ListItemText, Toolbar, Box, IconButton,
+  Divider, Tooltip,
 } from '@mui/material';
 import {
-  Dashboard,
-  People,
-  // Settings,
-  Menu,
-  ChevronLeft,
-  // PersonAdd,
-  AccountCircle,
+  People, Menu, ChevronLeft, AccountCircle,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
@@ -29,22 +15,18 @@ const drawerWidth = 200;
 const drawerWidthCollapsed = 80;
 
 const navItems = [
-  { label: 'Dashboard', icon: <Dashboard fontSize='large' />, path: '/admin' },
-  { label: 'User Management', icon: <People fontSize='large' />, path: '/admin/users' },
-  // { label: 'Create User', icon: <PersonAdd fontSize='large' />, path: '/admin/create-users' },
-  // { label: 'System Settings', icon: <Settings fontSize='large' />, path: '/admin/settings' },
+  { label: 'User Management', icon: <People fontSize='large' />, path: '/admin' },
   { label: 'Profile', icon: <AccountCircle fontSize='large' />, path: '/admin/profile' },
 ];
 
 function AdminNavbar() {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(true); // Initially collapsed
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
-    // Ensure drawer stays collapsed when switching from mobile to larger screens
     if (!isMobile) {
       setIsCollapsed(true);
       setMobileOpen(false);

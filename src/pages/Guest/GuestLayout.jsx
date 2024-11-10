@@ -1,19 +1,19 @@
-import { Box } from '@mui/material';
-import { Outlet } from 'react-router-dom';
-import UMMNavbar from '../Navbar/UMMNavbar';
-
-const UMMLayout = () => {
+import { Box } from "@mui/material"
+import GuestNavbar from "../Navbar/GuestNavbar"
+import { Outlet } from "react-router-dom"
+function GuestLayout() {
     return (
         <Box sx={{ display: 'flex' }}>
-            <UMMNavbar />
+            <GuestNavbar />
             <Box
                 component="main"
                 sx={{ flexGrow: 1, backgroundColor: 'background.default', p: 3 }}
             >
+
                 <Outlet />
             </Box>
         </Box>
-    );
-};
+    )
+}
 
-export default UMMLayout;
+export default GuestLayout

@@ -40,6 +40,7 @@ const useTopicService = () => {
         try {
             const response = await axios.post(API_URL, topic, {
                 headers: {
+                    'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`
                 }
             });
@@ -54,6 +55,7 @@ const useTopicService = () => {
         try {
             const response = await axios.put(`${API_URL}/${topicId}`, topic, {
                 headers: {
+                    'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`
                 }
             });

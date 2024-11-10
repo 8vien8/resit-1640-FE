@@ -1,6 +1,7 @@
-import { Box, Typography } from '@mui/material';
-
+import { Box, Typography, Button } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 const NotFound = () => {
+    const navigate = useNavigate();
     return (
         <Box sx={{ textAlign: 'center', mt: 5 }}>
             <Typography variant="h4" gutterBottom>
@@ -9,7 +10,14 @@ const NotFound = () => {
             <Typography variant="body1">
                 The page you are looking for does not exist.
             </Typography>
-        </Box>
+            <Button
+                sx={{ mt: 3 }}
+                variant='outlined'
+                onClick={() => navigate('/login')}
+            >
+                Back to home
+            </Button>
+        </Box >
     );
 };
 
