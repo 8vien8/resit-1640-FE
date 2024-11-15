@@ -8,7 +8,7 @@ import useRoleService from '../../../services/rolesService';
 import PropTypes from 'prop-types';
 import { AvatarUpload, SelectField } from './formUtils';
 
-const CreateUserForm = ({ onCreatedUser }) => {
+const CreateUserForm = ({ onCreatedUser, onError }) => {
     const userService = useUserService();
     const facultiesService = useFacultyService();
     const roleService = useRoleService();
@@ -48,14 +48,18 @@ const CreateUserForm = ({ onCreatedUser }) => {
     }, [roleService, facultiesService, dataFetched]);
 
     const isValidEmail = (email) => {
-        const emailPattern = /^[a-zA-Z0-9._%+-]+@gmail\.com$/; 
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
         return emailPattern.test(email);
     };
 
     const handleCreate = async (e) => {
         e.preventDefault();
         if (Object.values(formData).some(value => !value) || !isValidEmail(formData.email)) {
-            setShowError(true);
+            const message = Object.values(formData).some(value => !value)
+                ? "Please fill out all required fields."
+                : "Email must be a valid Gmail address.";
+
+            onError(message);
             return;
         }
         setLoading(true);
@@ -66,7 +70,10 @@ const CreateUserForm = ({ onCreatedUser }) => {
             await userService.createUser(data);
             onCreatedUser();
         } catch (error) {
-            console.error('Error creating user:', error);
+            const errorMessage = error.response && error.response.data.message
+                ? error.response.data.message
+                : 'An error occurred while creating the user.';
+            onError(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -154,6 +161,7 @@ const CreateUserForm = ({ onCreatedUser }) => {
 
 CreateUserForm.propTypes = {
     onCreatedUser: PropTypes.func.isRequired,
+    onError: PropTypes.func.isRequired,
 };
 
 export default CreateUserForm;
