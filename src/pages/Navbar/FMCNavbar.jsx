@@ -16,6 +16,7 @@ import {
     Menu,
     ChevronLeft,
     AccountCircle,
+    Publish,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
@@ -27,6 +28,7 @@ const drawerWidthCollapsed = 80;
 
 const navItems = [
     { label: 'Dashboard', icon: <Dashboard fontSize='large' />, path: '/fmc' },
+    { label: 'Public Contribution', icon: <Publish fontSize='large' />, path: '/fmc/public_contribution' },
     { label: 'Profile', icon: <AccountCircle fontSize='large' />, path: '/fmc/profile' },
 ];
 

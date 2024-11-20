@@ -38,6 +38,7 @@ import ResetPasswordSuccess from '../pages/public/ResetPasswordSuccess';
 import Unauthorized from '../pages/public/Unauthorized';
 import NotFound from '../pages/public/NotFound';
 import Profile from '../pages/public/Profile';
+import PublicContributionTable from '../pages/FMC/SelectContributionForPublic';
 
 const AppRouter = () => {
     const ROLE_IDS = {
@@ -84,8 +85,9 @@ const AppRouter = () => {
                     <Route path="/fmc" element={<FMCLayout />}>
                         <Route index element={<FMCDashboard />} />
                         <Route path="topic/:topicId/:topicName/:endDate" element={<ContributionsInTopic />} />
+                        <Route path="public_contribution" element={<PublicContributionTable />} />
                         <Route path="profile" element={<Profile />} />
-                    </Route>
+                    </Route>    
                 </Route>
 
                 {/* Student Routes */}

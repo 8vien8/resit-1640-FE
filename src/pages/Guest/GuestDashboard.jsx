@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, } from "react";
 import { useContext } from "react";
 import { UserContext } from "../../context/UserContext";
-import useContributionService from "../../services/contributionsServices";
+import { getPublicContributions } from '../../services/publicContributionService';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead,
     TableRow, Paper, Typography, List, ListItem,
@@ -15,7 +15,6 @@ import pdfIcon from '../../assets/pdf.ico';
 const GuestDashboard = () => {
     const { user } = useContext(UserContext);
     const [contributions, setContributions] = useState([]);
-    const contributionsService = useContributionService();
 
     const [loading, setLoading] = useState(false);
     const [hasFetchedData, setHasFetchedData] = useState(false);
@@ -23,14 +22,14 @@ const GuestDashboard = () => {
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await contributionsService.getContributions();
+            const data = await getPublicContributions();
             setContributions(data);
         } catch (error) {
             console.error("Error fetching contributions: ", error);
         } finally {
             setLoading(false);
         }
-    }, [contributionsService]);
+    }, []);
 
     useEffect(() => {
         if (!hasFetchedData) {
@@ -51,43 +50,8 @@ const GuestDashboard = () => {
     };
     const theme = useTheme();
 
-    const getStatusColor = (status) => {
-        const statusColorMap = {
-            'Pending': theme.palette.primary.main,
-            'Approved': theme.palette.success.main,
-            'Rejected': theme.palette.error.main,
-        };
-        return statusColorMap[status] || theme.palette.text.secondary;
-    };
-
     const truncateFileName = (name) => {
         return name.length > MAX_FILE_NAME_LENGTH ? `${name.substring(0, MAX_FILE_NAME_LENGTH)}...` : name;
-    };
-
-    const renderContributionRows = () => {
-        return contributions
-            .filter(contribution => contribution.statusID?.statusName === 'Approved')
-            .map((contribution) => (
-                <TableRow key={contribution._id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 }, '&:hover': { backgroundColor: styles.lightGray } }}>
-                    <TableCell>
-                        <Typography variant="body1" fontWeight="bold" color={styles.primaryBlue}>
-                            {contribution.title}
-                        </Typography>
-                    </TableCell>
-                    <TableCell>
-                        <Typography variant="body2" sx={{ maxWidth: 200, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                            {contribution.content}
-                        </Typography>
-                    </TableCell>
-                    <TableCell>{renderFiles(contribution.files)}</TableCell>
-                    <TableCell>{contribution.comments}</TableCell>
-                    <TableCell >
-                        <Typography variant="body2" fontWeight="bold" color={getStatusColor(contribution.statusID?.statusName)}>
-                            {contribution.statusID?.statusName}
-                        </Typography>
-                    </TableCell>
-                </TableRow>
-            ));
     };
 
     const renderFiles = (files) => (
@@ -131,19 +95,46 @@ const GuestDashboard = () => {
                     <CircularProgress />
                 </div>
             ) : contributions.length > 0 ? (
-                <TableContainer component={Paper} elevation={3}>
+                <TableContainer component={Paper}>
                     <Table>
                         <TableHead>
-                            <TableRow sx={{ backgroundColor: styles.primaryOrange }}>
-                                <TableCell sx={{ width: '20%', color: styles.offWhite }}><strong >Title</strong></TableCell>
-                                <TableCell sx={{ width: '30%', color: styles.offWhite }}><strong >Content</strong></TableCell>
-                                <TableCell sx={{ width: '20%', color: styles.offWhite }}><strong >Files</strong></TableCell>
-                                <TableCell sx={{ width: '10%', color: styles.offWhite }}><strong >Feedback</strong></TableCell>
-                                <TableCell sx={{ width: '5%', color: styles.offWhite }}><strong >Status</strong></TableCell>
+                            <TableRow>
+                                <TableCell>#</TableCell>
+                                <TableCell>Contribution</TableCell>
+                                <TableCell>Published Date</TableCell>
+                                <TableCell>Files</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {renderContributionRows()}
+                            {contributions.length > 0 ? (
+                                contributions.map((item) => (
+                                    <TableRow key={item._id}>
+                                        <TableCell></TableCell>
+                                        <TableCell>
+                                            {/* Display specific fields from the nested contributionID object */}
+                                            <div>
+                                                <strong>Title:</strong> {item.contributionID.title}
+                                            </div>
+                                            <div>
+                                                <strong>Content:</strong> {item.contributionID.content}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            {/* Display formatted publishedDate */}
+                                            {item.publishedDate
+                                                ? new Date(item.publishedDate).toLocaleDateString()
+                                                : 'N/A'}
+                                        </TableCell>
+                                        <TableCell>{renderFiles(item.contributionID?.files)}</TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={5} align="center">
+                                        No contributions found.
+                                    </TableCell>
+                                </TableRow>
+                            )}
                         </TableBody>
                     </Table>
                 </TableContainer>

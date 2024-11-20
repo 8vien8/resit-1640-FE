@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, } from "react";
 import { useParams } from "react-router-dom";
 import useContributionService from "../../../../services/contributionsServices";
+import { createPublicContribution } from "../../../../services/publicContributionService"
 import {
     Table, TableBody, TableCell, TableContainer, TableHead,
     TableRow, Paper, Typography, List, ListItem,
@@ -17,6 +18,8 @@ const TopicDetail = () => {
     const { topicId, topicName, endDate } = useParams();
     const [contributions, setContributions] = useState([]);
     const contributionsService = useContributionService();
+    const [publicContributions, setPublicContributions] = useState(new Set());
+
 
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
@@ -67,6 +70,19 @@ const TopicDetail = () => {
         } catch (error) {
             console.error("Error updating contribution: ", error);
             setSnackbarState({ open: true, message: 'Error updating contribution.', severity: 'error' });
+        }
+    };
+
+    const handlePublic = async (contributionID) => {
+        try {
+            const data = { contributionID };
+
+            await createPublicContribution(data);
+            setPublicContributions((prev) => new Set(prev.add(contributionID)));
+            setSnackbarState({ open: true, message: 'Contribution published successfully.', severity: 'success' });
+        } catch (error) {
+            console.error("Error publishing contribution:", error);
+            setSnackbarState({ open: true, message: error.message || 'Error publishing contribution.', severity: 'error' });
         }
     };
 
@@ -126,6 +142,14 @@ const TopicDetail = () => {
                             Grade
                         </Button>
                     )}
+                    <Button
+                        onClick={() => handlePublic(contribution._id)}
+                        variant="contained"
+                        color="secondary"
+                        disabled={publicContributions.has(contribution._id)}
+                    >
+                        Public
+                    </Button>
                 </TableCell>
             </TableRow>
         ));
