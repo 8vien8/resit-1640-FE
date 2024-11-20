@@ -7,7 +7,6 @@ import useTopicService from '../../../../../services/topicService';
 import { useNavigate } from 'react-router-dom';
 import TopicDialog from './TopicDialog';
 import ConfirmationDialog from './ConfirmationDialog';
-import StatusFilter from './StatusFilter';
 
 const styles = {
     primaryBlue: "#2196F3",
@@ -30,7 +29,6 @@ const TopicsTable = ({ topics, facultyId, onChangeData, onNotify }) => {
 
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
     const [topicToDelete, setTopicToDelete] = useState(null);
-    const [statusFilter, setStatusFilter] = useState('');
 
     const handleClickOpen = (topic) => {
         setOpenDialog(true);
@@ -134,7 +132,6 @@ const TopicsTable = ({ topics, facultyId, onChangeData, onNotify }) => {
                 <Button variant="contained" sx={{ backgroundColor: styles.primaryBlue }} onClick={() => handleClickOpen(null)}>
                     Create Topic
                 </Button>
-                <StatusFilter statusFilter={statusFilter} setStatusFilter={setStatusFilter} />
             </Box>
             <TableContainer component={Paper} style={{ marginTop: '1em' }}>
                 <Table>

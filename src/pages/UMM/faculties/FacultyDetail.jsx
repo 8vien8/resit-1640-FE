@@ -7,6 +7,7 @@ import useTopicService from '../../../services/topicService';
 import useUserService from '../../../services/userManagementService';
 import TopicsTable from './facultyDetail/topic/TopicsTable';
 import UsersTable from './facultyDetail/user/UsersTable';
+import { StatusFilter } from '../../utils';
 
 const FacultyDetailView = () => {
     const { facultyId, facultyName } = useParams();
@@ -18,6 +19,7 @@ const FacultyDetailView = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [hasFetchedData, setHasFetchedData] = useState(false);
+    const [statusFilter, setStatusFilter] = useState('');
 
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -57,6 +59,29 @@ const FacultyDetailView = () => {
         setSnackbarOpen(true);
     };
 
+    const filterTopics = (topics) => {
+        const today = new Date();
+        const threeDaysFromNow = new Date(today);
+        threeDaysFromNow.setDate(today.getDate() + 3);
+
+        return topics.filter((topic) => {
+            const topicEndDate = new Date(topic.endDate);
+            const isExpired = topicEndDate < today;
+            const isSoonToExpire = topicEndDate <= threeDaysFromNow;
+
+            if (statusFilter === 'expired') {
+                return isExpired;
+            } else if (statusFilter === 'soonToExpire') {
+                return isSoonToExpire && !isExpired;
+            } else if (statusFilter === 'active') {
+                return !isExpired && !isSoonToExpire;
+            }
+            return true;
+        });
+    };
+
+    const filteredTopics = filterTopics(topics);
+
     return (
         <Container>
             <Typography variant="h4" gutterBottom>{decodeURIComponent(facultyName)}</Typography>
@@ -67,7 +92,10 @@ const FacultyDetailView = () => {
             ) : (
                 <>
                     <Typography variant="h6" style={{ marginTop: '1em' }}>Topics</Typography>
-                    <TopicsTable topics={topics} facultyId={facultyId} onChangeData={fetchData} onNotify={handleNotify} />
+
+                    <StatusFilter statusFilter={statusFilter} setStatusFilter={setStatusFilter} />
+
+                    <TopicsTable topics={filteredTopics} facultyId={facultyId} onChangeData={fetchData} onNotify={handleNotify} />
 
                     <Typography variant="h6" style={{ marginTop: '1em' }}>Members</Typography>
                     <UsersTable users={users} />

@@ -13,6 +13,7 @@ const styles = {
 };
 
 const FacultyTable = ({ faculties, onViewFaculty, setEditingFaculty, openConfirmDeleteDialog }) => {
+    const filteredFaculties = faculties.filter(faculty => faculty.facultyName.toLowerCase() !== "none");
 
     return (
         <TableContainer component={Paper} style={{ marginTop: '1em', backgroundColor: styles.offWhite }}>
@@ -24,7 +25,7 @@ const FacultyTable = ({ faculties, onViewFaculty, setEditingFaculty, openConfirm
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {faculties.map((faculty) => (
+                    {filteredFaculties.map((faculty) => (
                         <TableRow key={faculty._id}>
                             <TableCell sx={{ color: styles.primaryBlue }}>
                                 {faculty.facultyName}
@@ -41,6 +42,7 @@ const FacultyTable = ({ faculties, onViewFaculty, setEditingFaculty, openConfirm
         </TableContainer>
     );
 };
+
 
 FacultyTable.propTypes = {
     faculties: PropTypes.arrayOf(PropTypes.object).isRequired,

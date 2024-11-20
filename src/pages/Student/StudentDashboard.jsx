@@ -3,16 +3,17 @@ import { UserContext } from "../../context/UserContext";
 import useTopicService from '../../services/topicService';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button,
-    Box, FormControl, Select, MenuItem, InputLabel, Container, Typography
+    Box, Container, Typography
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { StatusFilter } from "../utils";
 
 const StudentDashboard = () => {
     const { user } = useContext(UserContext);
     const topicService = useTopicService();
     const [topics, setTopics] = useState([]);
     const [hasFetchedData, setHasFetchedData] = useState(false);
-    const [statusFilter, setStatusFilter] = useState('');
+    const [statusFilter, setStatusFilter] = useState('')
     const navigate = useNavigate();
 
     const fetchData = useCallback(async () => {
@@ -44,6 +45,23 @@ const StudentDashboard = () => {
         if (!b.isExpired && !b.isSoonToExpire && (a.isExpired || a.isSoonToExpire)) return 1;
         if (a.isSoonToExpire && b.isExpired) return -1;
         return 0;
+    }).filter((topic) => {
+        const today = new Date();
+        const threeDaysFromNow = new Date(today);
+        threeDaysFromNow.setDate(today.getDate() + 3);
+
+        const topicEndDate = new Date(topic.endDate);
+        const isExpired = topicEndDate < today;
+        const isSoonToExpire = topicEndDate <= threeDaysFromNow;
+
+        if (statusFilter === 'expired') {
+            return isExpired;
+        } else if (statusFilter === 'soonToExpire') {
+            return isSoonToExpire && !isExpired;
+        } else if (statusFilter === 'active') {
+            return !isExpired && !isSoonToExpire;
+        }
+        return true;
     });
 
     const handleView = (topic) => {
@@ -70,22 +88,13 @@ const StudentDashboard = () => {
             <Typography align='center' variant="h4" gutterBottom >
                 Welcome <strong>{user.username}</strong>
             </Typography>
-            <FormControl sx={{ minWidth: 120 }}>
-                <InputLabel shrink>Status</InputLabel>
-                <Select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    displayEmpty
-                >
-                    <MenuItem value="">
-                        <em>All</em>
-                    </MenuItem>
-                    <MenuItem value="expired">Expired</MenuItem>
-                    <MenuItem value="soonToExpire">Soon to Expire</MenuItem>
-                    <MenuItem value="active">Active</MenuItem>
-                </Select>
-            </FormControl>
             <TableContainer component={Paper} style={{ marginTop: '1em' }}>
+
+                <StatusFilter
+                    statusFilter={statusFilter}
+                    setStatusFilter={setStatusFilter}
+                />
+
                 <Table>
                     <TableHead sx={{ backgroundColor: styles.primaryOrange }}>
                         <TableRow>

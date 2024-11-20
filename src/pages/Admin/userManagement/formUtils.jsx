@@ -38,24 +38,47 @@ AvatarUpload.propTypes = {
 };
 
 
-const SelectField = ({ label, value, onChange, options, fetchingData, disabled }) => (
-    <FormControl fullWidth required sx={{ mb: 2 }} disabled={disabled}>
-        <InputLabel>{label}</InputLabel>
-        <Select value={value} onChange={onChange}>
-            {fetchingData ? (
-                <MenuItem disabled>
-                    <CircularProgress size={24} />
-                </MenuItem>
-            ) : (
-                options.map(option => (
-                    <MenuItem key={option._id} value={option._id} sx={{ "&:hover": { fontWeight: "bold" } }}>
-                        {option.roleName || option.facultyName}
+const SelectField = ({ label, value, onChange, options, fetchingData, disabled }) => {
+    const isEmpty = !fetchingData && options.length === 0;
+
+    return (
+        <FormControl fullWidth required sx={{ mb: 2 }} disabled={disabled}>
+            <InputLabel>{label}</InputLabel>
+            <Select
+                value={options.some(option => option._id === value) ? value : ""}
+                onChange={onChange}
+                displayEmpty
+                renderValue={(selected) =>
+                    selected
+                        ? options.find(option => option._id === selected)?.roleName ||
+                        options.find(option => option._id === selected)?.facultyName
+                        : <em>Select an option</em>
+                }
+            >
+                {fetchingData ? (
+                    <MenuItem disabled>
+                        <CircularProgress size={24} />
                     </MenuItem>
-                ))
-            )}
-        </Select>
-    </FormControl>
-);
+                ) : isEmpty ? (
+                    <MenuItem disabled>
+                        <em>No data available</em>
+                    </MenuItem>
+                ) : (
+                    options.map(option => (
+                        <MenuItem
+                            key={option._id}
+                            value={option._id}
+                            sx={{ "&:hover": { fontWeight: "bold" } }}
+                        >
+                            {option.roleName || option.facultyName}
+                        </MenuItem>
+                    ))
+                )}
+            </Select>
+        </FormControl>
+    );
+};
+
 
 SelectField.propTypes = {
     label: PropTypes.string.isRequired,

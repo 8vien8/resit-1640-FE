@@ -27,6 +27,7 @@ const UserManagement = () => {
     const [userToUpdate, setUserToUpdate] = useState(null);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // For success or error messages
     const userService = useUserService();
     const facultyService = useFacultyService();
     const roleService = useRoleService();
@@ -45,6 +46,7 @@ const UserManagement = () => {
             setFaculties(facultiesData);
         } catch (error) {
             setSnackbarMessage('Error fetching data, please try again later.');
+            setSnackbarSeverity('error'); // Set to error severity
             setSnackbarOpen(true);
             console.error('Error fetching data:', error);
         } finally {
@@ -75,6 +77,13 @@ const UserManagement = () => {
         setIsCreateUserModalOpen(false);
         fetchData();
         setSnackbarMessage('User created successfully!');
+        setSnackbarSeverity('success');
+        setSnackbarOpen(true);
+    };
+
+    const handleError = (message) => {
+        setSnackbarMessage(message);
+        setSnackbarSeverity('error');
         setSnackbarOpen(true);
     };
 
@@ -84,9 +93,11 @@ const UserManagement = () => {
                 await userService.deleteUser(userToDelete._id);
                 fetchData();
                 setSnackbarMessage('User deleted successfully!');
+                setSnackbarSeverity('success');
                 setSnackbarOpen(true);
             } catch (error) {
                 setSnackbarMessage('Error deleting user, please try again.');
+                setSnackbarSeverity('error');
                 setSnackbarOpen(true);
                 console.error('Error deleting user:', error);
             } finally {
@@ -110,6 +121,7 @@ const UserManagement = () => {
         setIsUpdateUserModalOpen(false);
         fetchData();
         setSnackbarMessage('User updated successfully!');
+        setSnackbarSeverity('success');
         setSnackbarOpen(true);
     };
 
@@ -141,11 +153,11 @@ const UserManagement = () => {
             </Button>
             {/* Create User Modal */}
             <Modal open={isCreateUserModalOpen} onClose={() => setIsCreateUserModalOpen(false)}
-                sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', }}
+                sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
                 <Box
-                    sx={{ p: 4, bgcolor: 'background.paper', width: '400px', maxHeight: '90%', overflowY: 'auto', borderRadius: 2, }}>
-                    <CreateUserForm onCreatedUser={handleUserCreated} onClose={() => setIsCreateUserModalOpen(false)} />
+                    sx={{ p: 4, bgcolor: 'background.paper', width: '400px', maxHeight: '90%', overflowY: 'auto', borderRadius: 2 }}>
+                    <CreateUserForm onCreatedUser={handleUserCreated} onError={handleError} />
                 </Box>
             </Modal>
             {/* Update User Modal */}
@@ -156,8 +168,7 @@ const UserManagement = () => {
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
             >
-                <Box sx={{ p: 4, bgcolor: 'background.paper', width: '400px', maxHeight: '90%', overflowY: 'auto', borderRadius: 2, }}
-                >
+                <Box sx={{ p: 4, bgcolor: 'background.paper', width: '400px', maxHeight: '90%', overflowY: 'auto', borderRadius: 2 }}>
                     {userToUpdate && (
                         <UpdateUserForm
                             user={userToUpdate}
@@ -193,7 +204,7 @@ const UserManagement = () => {
             </Dialog>
             {/* Snackbar for notifications */}
             <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
-                <MuiAlert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
+                <MuiAlert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
                     {snackbarMessage}
                 </MuiAlert>
             </Snackbar>

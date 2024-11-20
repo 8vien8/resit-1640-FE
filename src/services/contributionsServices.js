@@ -3,6 +3,7 @@ import axios from "axios";
 const API_URL = " http://localhost:5000/api/contributions"
 const API_STATUS_URL = "http://localhost:5000/api/contribution-status"
 const useContributionService = () => {
+
     const getContributions = async () => {
         try {
             const response = await axios.get(API_URL);

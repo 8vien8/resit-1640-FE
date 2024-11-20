@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { TextField, Button, Box, Typography } from '@mui/material';
+import { TextField, Button, Box, Typography, Snackbar, Alert } from '@mui/material';
 import useUserService from '../../../services/userManagementService';
 import useFacultyService from '../../../services/facultiesService';
 import useRoleService from '../../../services/rolesService';
@@ -13,8 +13,8 @@ const UpdateUserForm = ({ user, onUserUpdated }) => {
 
     const [username, setUsername] = useState(user.username || '');
     const [email, setEmail] = useState(user.email || '');
-    const [roleID, setRoleID] = useState('');
-    const [facultyID, setFacultyID] = useState('');
+    const [roleID, setRoleID] = useState(user.roleID?._id || '');
+    const [facultyID, setFacultyID] = useState(user.facultyID?._id || '');
     const [avatar, setAvatar] = useState(user.avatar || null);
     const [avatarPreview, setAvatarPreview] = useState(user.avatar || '');
     const [loading, setLoading] = useState(false);
@@ -22,6 +22,8 @@ const UpdateUserForm = ({ user, onUserUpdated }) => {
     const [faculties, setFaculties] = useState([]);
     const [fetchingData, setFetchingData] = useState(true);
     const [dataFetched, setDataFetched] = useState(false);
+    const [showError, setShowError] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -33,9 +35,6 @@ const UpdateUserForm = ({ user, onUserUpdated }) => {
                     ]);
                     setRoles(rolesData);
                     setFaculties(facultiesData);
-
-                    setRoleID(rolesData.find(role => role._id === user.roleID?._id)?._id || '');
-                    setFacultyID(facultiesData.find(faculty => faculty._id === user.facultyID?._id)?._id || '');
                     setDataFetched(true);
                 } catch (error) {
                     console.error('Error fetching roles or faculties:', error);
@@ -45,7 +44,7 @@ const UpdateUserForm = ({ user, onUserUpdated }) => {
             }
         };
         fetchData();
-    }, [dataFetched, user.roleID, user.facultyID, roleService, facultiesService]);
+    }, [dataFetched, roleService, facultiesService]);
 
     useEffect(() => {
         if (user) {
@@ -74,6 +73,16 @@ const UpdateUserForm = ({ user, onUserUpdated }) => {
             onUserUpdated();
         } catch (error) {
             console.error('Error updating user:', error);
+            const errorResponse = error.response?.data;
+
+            // Check if the error indicates that the email already exists
+            if (errorResponse && errorResponse.message) {
+                setErrorMessage(errorResponse.message); // Set the error message
+                setShowError(true); // Show the error Snackbar
+            } else {
+                setErrorMessage('Failed to update user. Please try again later.'); // Generic error message
+                setShowError(true);
+            }
         } finally {
             setLoading(false);
         }
@@ -136,6 +145,17 @@ const UpdateUserForm = ({ user, onUserUpdated }) => {
             <Button fullWidth variant="contained" color="primary" type="submit" disabled={loading}>
                 {loading ? 'Updating...' : 'Update User'}
             </Button>
+
+            <Snackbar
+                open={showError}
+                autoHideDuration={6000}
+                onClose={() => setShowError(false)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+            >
+                <Alert severity="error" onClose={() => setShowError(false)}>
+                    {errorMessage}
+                </Alert>
+            </Snackbar>
         </Box>
     );
 };
