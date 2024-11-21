@@ -9,7 +9,7 @@ import pdfIcon from '../../../../assets/pdf.ico';
 import TermsAndConditions from '../../TermsAndConditions';
 import {
     Container, TextField, Button, FormControlLabel, Checkbox, Box,
-    Typography, Paper, Snackbar, Alert, List, ListItem, ListItemIcon, ListItemText, IconButton,
+    Typography, Paper, Snackbar, Alert, List, ListItem, ListItemIcon, ListItemText, IconButton, CircularProgress
 } from '@mui/material';
 import { UploadFile, Delete } from '@mui/icons-material';
 
@@ -32,6 +32,7 @@ const CreateSubmission = () => {
 
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
     const [modalOpen, setModalOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const handleChange = ({ target: { name, type, checked, value } }) => {
         setSubmissionData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
@@ -60,9 +61,11 @@ const CreateSubmission = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
 
         if (submissionData.files.length === 0) {
             showSnackbar('Please upload at least one file.', 'warning');
+            setLoading(false);
             return;
         }
 
@@ -79,6 +82,8 @@ const CreateSubmission = () => {
         } catch (error) {
             console.error('Error creating submission:', error);
             showSnackbar('Failed to create submission.', 'error');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -120,7 +125,7 @@ const CreateSubmission = () => {
                 <ListItem key={index}>
                     <ListItemIcon>{getFileIcon(file.type)}</ListItemIcon>
                     <ListItemText primary={file.name} />
-                    <IconButton color='error' edge="end" onClick={() => handleRemoveFile(file)}>
+                    <IconButton color='error' edge="end" onClick={() => handleRemoveFile(file)} disabled={loading}>
                         <Delete />
                     </IconButton>
                 </ListItem>
@@ -142,6 +147,7 @@ const CreateSubmission = () => {
                     value={submissionData.title}
                     onChange={handleChange}
                     required
+                    disabled={loading}
                 />
                 <TextField
                     fullWidth
@@ -153,6 +159,7 @@ const CreateSubmission = () => {
                     value={submissionData.content}
                     onChange={handleChange}
                     required
+                    disabled={loading}
                 />
                 <FormControlLabel
                     control={
@@ -161,6 +168,7 @@ const CreateSubmission = () => {
                             checked={submissionData.agreedToTnC}
                             onChange={handleChange}
                             required
+                            disabled={loading}
                         />
                     }
                     label={<span style={{ cursor: 'pointer' }} onClick={() => setModalOpen(true)}>I agree to the Terms and Conditions</span>}
@@ -170,6 +178,7 @@ const CreateSubmission = () => {
                     component="label"
                     sx={{ mt: 2, bgcolor: 'success.main', '&:hover': { bgcolor: 'success.dark' } }}
                     startIcon={<UploadFile />}
+                    disabled={loading}
                 >
                     Upload Files
                     <input
@@ -183,9 +192,16 @@ const CreateSubmission = () => {
                 <Box sx={{ mt: 2, maxHeight: '200px', overflowY: 'auto', border: '1px solid', borderColor: 'divider', padding: 1 }}>
                     {renderFileList()}
                 </Box>
-                <Button type="submit" variant="contained" sx={{ mt: 3, width: '100%', bgcolor: 'primary.main', color: 'white', '&:hover': { bgcolor: 'primary.dark' } }}>
-                    Submit
-                </Button>
+                <Box sx={{ mt: 3, position: 'relative' }}>
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        sx={{ width: '100%', bgcolor: 'primary.main', color: 'white', '&:hover': { bgcolor: 'primary.dark' } }}
+                        disabled={loading}
+                    >
+                        {loading ? <CircularProgress size={24} color="inherit" /> : 'Submit'}
+                    </Button>
+                </Box>
             </form>
             <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>
                 <Alert onClose={() => setSnackbar(prev => ({ ...prev, open: false }))} severity={snackbar.severity}>

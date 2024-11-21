@@ -108,7 +108,7 @@ const PublicContributionTable = () => {
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell>#</TableCell>
+                                <TableCell></TableCell>
                                 <TableCell>Contribution</TableCell>
                                 <TableCell>Published Date</TableCell>
                                 <TableCell>Files</TableCell>
@@ -117,16 +117,16 @@ const PublicContributionTable = () => {
                         </TableHead>
                         <TableBody>
                             {publicContributions.length > 0 ? (
-                                publicContributions.map((item) => (
+                                publicContributions.map((item, index) => (
                                     <TableRow key={item._id}>
-                                        <TableCell>{item._id}</TableCell>
+                                        <TableCell>{index}</TableCell>
                                         <TableCell>
                                             {/* Display specific fields from the nested contributionID object */}
                                             <div>
-                                                <strong>Title:</strong> {item.contributionID.title}
+                                                <strong>Title:</strong> {item.contributionID?.title}
                                             </div>
                                             <div>
-                                                <strong>Content:</strong> {item.contributionID.content}
+                                                <strong>Content:</strong> {item.contributionID?.content}
                                             </div>
                                         </TableCell>
                                         <TableCell>
