@@ -4,7 +4,7 @@ import useContributionService from "../../../../../../services/contributionsServ
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography,
     List, ListItem, ListItemText, ListItemIcon, useTheme, Container, FormControl, InputLabel, Select, MenuItem,
-    CircularProgress, Button
+    CircularProgress, Button, Box
 } from "@mui/material";
 import pdfIcon from '../../../../../../assets/pdf.ico';
 import wordIcon from '../../../../../../assets/word.ico';
@@ -128,11 +128,20 @@ function ContributionsInFaculty() {
                     </Typography>
                 </TableCell>
                 <TableCell>{renderFiles(contribution.files)}</TableCell>
+                <TableCell>
+                    <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={() => downloadFiles(contribution.files)}
+                    >
+                        Download
+                    </Button>
+                </TableCell>
             </TableRow>
-        ))
+        ));
     };
 
-    const downloadAllFiles = async (files) => {
+    const downloadFiles = async (files) => {
         const zip = new JSZip();
         for (const file of files) {
             const fileUrl = file.filePath;
@@ -143,7 +152,7 @@ function ContributionsInFaculty() {
                 if (!response.ok) {
                     throw new Error(`Failed to fetch file: ${fileName}`);
                 }
-                const fileBlob = await response.blob(); // Get the file as a Blob
+                const fileBlob = await response.blob();
                 zip.file(fileName, fileBlob); // Add the file to the zip
             } catch (err) {
                 console.error("Error adding file to zip:", err);
@@ -153,7 +162,37 @@ function ContributionsInFaculty() {
         // Generate the zip file and download it
         zip.generateAsync({ type: 'blob' })
             .then((content) => {
-                saveAs(content, "contributions.zip"); // Save the zip file
+                saveAs(content, "contribution_files.zip"); // Save the zip file
+            })
+            .catch((err) => {
+                console.error("Error generating zip file:", err);
+            });
+    };
+
+    const downloadAllFiles = async () => {
+        const zip = new JSZip();
+        for (const contribution of contributions) {
+            for (const file of contribution.files) {
+                const fileUrl = file.filePath;
+                const fileName = file.fileName;
+
+                try {
+                    const response = await fetch(fileUrl);
+                    if (!response.ok) {
+                        throw new Error(`Failed to fetch file: ${fileName}`);
+                    }
+                    const fileBlob = await response.blob();
+                    zip.file(fileName, fileBlob); // Add the file to the zip
+                } catch (err) {
+                    console.error("Error adding file to zip:", err);
+                }
+            }
+        }
+
+        // Generate the zip file and download it
+        zip.generateAsync({ type: 'blob' })
+            .then((content) => {
+                saveAs(content, "all_contribution_files.zip"); // Save the zip file
             })
             .catch((err) => {
                 console.error("Error generating zip file:", err);
@@ -166,27 +205,27 @@ function ContributionsInFaculty() {
                 Contributions for Topic: {topicName}
             </Typography>
 
-            <FormControl sx={{ marginBottom: 2 }}>
-                <InputLabel>Status</InputLabel>
-                <Select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '16px' }}>
+                <FormControl sx={{ minWidth: '120px' }}>
+                    <InputLabel>Status</InputLabel>
+                    <Select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                    >
+                        <MenuItem value="All">All</MenuItem>
+                        <MenuItem value="Pending">Pending</MenuItem>
+                        <MenuItem value="Approved">Approved</MenuItem>
+                        <MenuItem value="Rejected">Rejected</MenuItem>
+                    </Select>
+                </FormControl>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={downloadAllFiles}
                 >
-                    <MenuItem value="All">All</MenuItem>
-                    <MenuItem value="Pending">Pending</MenuItem>
-                    <MenuItem value="Approved">Approved</MenuItem>
-                    <MenuItem value="Rejected">Rejected</MenuItem>
-                </Select>
-            </FormControl>
-
-            <Button
-                variant="contained"
-                color="primary"
-                onClick={() => downloadAllFiles(filteredContributions.flatMap(contribution => contribution.files))}
-                sx={{ marginBottom: 2 }}
-            >
-                Download All Files
-            </Button>
+                    Download All
+                </Button>
+            </Box>
 
             {isLoading ? (
                 <CircularProgress />
@@ -201,6 +240,7 @@ function ContributionsInFaculty() {
                                 <TableCell sx={{ width: '10%' }}><strong style={{ color: styles.offWhite }}>Submitted at</strong></TableCell>
                                 <TableCell sx={{ width: '25%' }}><strong style={{ color: styles.offWhite }}>Content</strong></TableCell>
                                 <TableCell sx={{ width: '25%' }}><strong style={{ color: styles.offWhite }}>Files</strong></TableCell>
+                                <TableCell sx={{ width: '10%' }}><strong style={{ color: styles.offWhite }}>Download</strong></TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
