@@ -4,12 +4,14 @@ import useContributionService from "../../../../../../services/contributionsServ
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography,
     List, ListItem, ListItemText, ListItemIcon, useTheme, Container, FormControl, InputLabel, Select, MenuItem,
-    CircularProgress
+    CircularProgress, Button
 } from "@mui/material";
 import pdfIcon from '../../../../../../assets/pdf.ico';
 import wordIcon from '../../../../../../assets/word.ico';
 import imageIcon from '../../../../../../assets/image.ico';
 import defaultIcon from '../../../../../../assets/default.ico';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 
 const iconStyles = { width: 50, height: 50 };
 const MAX_FILE_NAME_LENGTH = 30;
@@ -20,6 +22,7 @@ const styles = {
     lightGray: "#B0BEC5",
     offWhite: "#F5F5F5",
 };
+
 function ContributionsInFaculty() {
     const { topicId, topicName } = useParams();
     const contributionsServices = useContributionService();
@@ -30,7 +33,7 @@ function ContributionsInFaculty() {
     const [isLoading, setIsLoading] = useState(false);
 
     const fetchData = useCallback(async () => {
-        setIsLoading(true)
+        setIsLoading(true);
         try {
             const contributions = await contributionsServices.getContributionByTopicId(topicId);
             setContributions(contributions);
@@ -127,7 +130,35 @@ function ContributionsInFaculty() {
                 <TableCell>{renderFiles(contribution.files)}</TableCell>
             </TableRow>
         ))
-    }
+    };
+
+    const downloadAllFiles = async (files) => {
+        const zip = new JSZip();
+        for (const file of files) {
+            const fileUrl = file.filePath;
+            const fileName = file.fileName;
+
+            try {
+                const response = await fetch(fileUrl);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch file: ${fileName}`);
+                }
+                const fileBlob = await response.blob(); // Get the file as a Blob
+                zip.file(fileName, fileBlob); // Add the file to the zip
+            } catch (err) {
+                console.error("Error adding file to zip:", err);
+            }
+        }
+
+        // Generate the zip file and download it
+        zip.generateAsync({ type: 'blob' })
+            .then((content) => {
+                saveAs(content, "contributions.zip"); // Save the zip file
+            })
+            .catch((err) => {
+                console.error("Error generating zip file:", err);
+            });
+    };
 
     return (
         <Container sx={{ padding: '20px', backgroundColor: styles.offWhite, borderRadius: '8px', boxShadow: theme.shadows[3] }}>
@@ -147,6 +178,15 @@ function ContributionsInFaculty() {
                     <MenuItem value="Rejected">Rejected</MenuItem>
                 </Select>
             </FormControl>
+
+            <Button
+                variant="contained"
+                color="primary"
+                onClick={() => downloadAllFiles(filteredContributions.flatMap(contribution => contribution.files))}
+                sx={{ marginBottom: 2 }}
+            >
+                Download All Files
+            </Button>
 
             {isLoading ? (
                 <CircularProgress />
