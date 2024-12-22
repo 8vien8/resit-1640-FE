@@ -1,4 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useContext } from 'react';
+import { UserContext } from '../../../../context/UserContext';
+import { useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { Dialog, Button, TextField, FormControl, InputLabel, Select, MenuItem, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import useContributionService from '../../../../services/contributionsServices';
@@ -10,7 +12,12 @@ const styles = {
     lightGray: "#B0BEC5",
     offWhite: "#F5F5F5",
 };
-const GradingContribution = ({ open, onClose, contribution, onUpdate }) => {
+const GradingContribution = ({ open, onClose, contribution, onUpdate, userId }) => {
+    const { user } = useContext(UserContext);
+    const { topicId } = useParams();
+    const facultyId = user.facultyID;
+    const updateUserRole = user.roleID
+
     const [comments, setComments] = useState('');
     const [status, setStatus] = useState('');
     const [files, setFiles] = useState([]);
@@ -38,14 +45,13 @@ const GradingContribution = ({ open, onClose, contribution, onUpdate }) => {
         if (contribution) {
             setComments(contribution.comments);
             setStatus(contribution.statusID?._id);
-            // Reset files
+
             setFiles([]);
 
-            // Tải dữ liệu thực tế của từng tệp
             const fetchFiles = async () => {
                 const fetchedFiles = await Promise.all(contribution.files.map(async (file) => {
-                    const response = await fetch(file.filePath); // Tải dữ liệu file
-                    const blob = await response.blob(); // Chuyển thành blob
+                    const response = await fetch(file.filePath);
+                    const blob = await response.blob();
                     return new File([blob], file.fileName, {
                         type: file.fileType,
                         lastModified: Date.now(),
@@ -61,8 +67,13 @@ const GradingContribution = ({ open, onClose, contribution, onUpdate }) => {
     const handleSubmit = () => {
         const formData = new FormData();
 
+        formData.append('updateUserRole', updateUserRole);
+        formData.append('userID', userId);
+        formData.append('facultyID', facultyId);
+        formData.append('topicID', topicId);
         formData.append('comments', comments);
         formData.append('statusID', status);
+
         files.forEach(file => formData.append('files', file));
         onUpdate({ id: contribution._id, data: formData });
     };
@@ -89,17 +100,22 @@ const GradingContribution = ({ open, onClose, contribution, onUpdate }) => {
                 />
                 <FormControl fullWidth sx={{ mt: 2 }}>
                     <InputLabel>Change Status</InputLabel>
-                    <Select
-                        value={status}
-                        onChange={(e) => setStatus(e.target.value)}
-                    >
-                        {statusOptions.map((statusOpt) => (
-                            <MenuItem key={statusOpt._id} value={statusOpt._id}>
-                                {statusOpt.statusName}
-                            </MenuItem>
-                        ))}
-                    </Select>
+                    {statusOptions.length > 0 ? (
+                        <Select
+                            value={status || ''}
+                            onChange={(e) => setStatus(e.target.value)}
+                        >
+                            {statusOptions.map((statusOpt) => (
+                                <MenuItem key={statusOpt._id} value={statusOpt._id}>
+                                    {statusOpt.statusName}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    ) : (
+                        <p>No status options available</p>
+                    )}
                 </FormControl>
+
                 <DialogActions sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
                     <Button onClick={handleClose} variant="outlined" color="secondary">Cancel</Button>
                     <Button onClick={handleSubmit} variant="contained" color="primary">Update</Button>
@@ -124,7 +140,8 @@ GradingContribution.propTypes = {
             })
         )
     }),
-    onUpdate: PropTypes.func.isRequired
+    onUpdate: PropTypes.func.isRequired,
+    userId: PropTypes.string.isRequired,
 };
 
 export default GradingContribution;

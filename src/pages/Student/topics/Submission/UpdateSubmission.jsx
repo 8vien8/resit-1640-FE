@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
+import { UserContext } from '../../../../context/UserContext';
+import { useParams } from 'react-router-dom';
 import {
     Modal, Button, TextField, Typography, Box, List, ListItem, ListItemText, ListItemIcon, IconButton,
     Snackbar, Alert
@@ -14,6 +16,12 @@ import { CloudUpload } from '@mui/icons-material';
 const iconStyles = { width: 50, height: 50 };
 
 const UpdateContribution = ({ open, onClose, contribution, onUpdate }) => {
+    const { user } = useContext(UserContext);
+    const { topicId } = useParams();
+    const userId = user._id;
+    const facultyId = user.facultyID;
+    const updateUserRole = user.roleID
+
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [files, setFiles] = useState([]);
@@ -28,11 +36,10 @@ const UpdateContribution = ({ open, onClose, contribution, onUpdate }) => {
             // Reset files
             setFiles([]);
 
-            // Tải dữ liệu thực tế của từng tệp
             const fetchFiles = async () => {
                 const fetchedFiles = await Promise.all(contribution.files.map(async (file) => {
-                    const response = await fetch(file.filePath); // Tải dữ liệu file
-                    const blob = await response.blob(); // Chuyển thành blob
+                    const response = await fetch(file.filePath);
+                    const blob = await response.blob();
                     return new File([blob], file.fileName, {
                         type: file.fileType,
                         lastModified: Date.now(),
@@ -44,7 +51,6 @@ const UpdateContribution = ({ open, onClose, contribution, onUpdate }) => {
             fetchFiles().catch(console.error);
         }
     }, [contribution]);
-
 
     const handleFileChange = (event) => {
         const selectedFiles = Array.from(event.target.files);
@@ -73,8 +79,13 @@ const UpdateContribution = ({ open, onClose, contribution, onUpdate }) => {
         }
 
         const formData = new FormData();
+
+        formData.append('updateUserRole', updateUserRole);
         formData.append('title', title);
         formData.append('content', content);
+        formData.append('userID', userId);
+        formData.append('facultyID', facultyId);
+        formData.append('topicID', topicId);
         files.forEach(file => formData.append('files', file));
 
         onUpdate({ id: contribution._id, data: formData });
@@ -186,7 +197,7 @@ const UpdateContribution = ({ open, onClose, contribution, onUpdate }) => {
                 onClose={handleSnackbarClose}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
             >
-                <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}> {/* Use dynamic severity */}
+                <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
                     {snackbarMessage}
                 </Alert>
             </Snackbar>

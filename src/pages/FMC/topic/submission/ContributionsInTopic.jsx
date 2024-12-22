@@ -226,6 +226,7 @@ const TopicDetail = () => {
                     onClose={handleClose}
                     contribution={selectedContribution}
                     onUpdate={handleUpdate}
+                    userId={selectedContribution.userID?._id}
                 />
             )}
             <Snackbar open={snackbarState.open} autoHideDuration={6000} onClose={handleSnackbarClose}>
