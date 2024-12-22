@@ -11,6 +11,9 @@ import {
 import MuiAlert from '@mui/material/Alert';
 import UserTable from './userManagement/userTable';
 import FilterBar from './userManagement/filterBar';
+import { getReportStatistics } from '../../services/reportService';
+import ReportContent from './userManagement/ReportContent';
+import * as XLSX from 'xlsx';
 
 const UserManagement = () => {
     const [users, setUsers] = useState([]);
@@ -27,10 +30,14 @@ const UserManagement = () => {
     const [userToUpdate, setUserToUpdate] = useState(null);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
-    const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // For success or error messages
+    const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+    const [reportData, setReportData] = useState(null);
+    const [isReportLoading, setIsReportLoading] = useState(false);
+    const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
     const userService = useUserService();
     const facultyService = useFacultyService();
     const roleService = useRoleService();
+    const reportService = getReportStatistics();
     const [hasFetchedData, setHasFetchedData] = useState(false);
 
     const fetchData = useCallback(async () => {
@@ -46,7 +53,7 @@ const UserManagement = () => {
             setFaculties(facultiesData);
         } catch (error) {
             setSnackbarMessage('Error fetching data, please try again later.');
-            setSnackbarSeverity('error'); // Set to error severity
+            setSnackbarSeverity('error');
             setSnackbarOpen(true);
             console.error('Error fetching data:', error);
         } finally {
@@ -54,6 +61,23 @@ const UserManagement = () => {
             setHasFetchedData(true);
         }
     }, [userService, facultyService, roleService]);
+
+    const fetchReportData = async () => {
+        setIsReportDialogOpen(true)
+        setIsReportLoading(true);
+        try {
+            const report = await reportService; // Call the report API
+            setReportData(report);
+            setIsReportDialogOpen(true);
+        } catch (error) {
+            setSnackbarMessage('Error generating report, please try again.');
+            setSnackbarSeverity('error');
+            setSnackbarOpen(true);
+            console.error('Error generating report:', error);
+        } finally {
+            setIsReportLoading(false);
+        }
+    };
 
     useEffect(() => {
         if (!hasFetchedData) {
@@ -136,38 +160,45 @@ const UserManagement = () => {
         setSnackbarOpen(false);
     };
 
+    // Export to Excel function
+    const handleExportToExcel = () => {
+        if (reportData) {
+            const ws = XLSX.utils.json_to_sheet(reportData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Report');
+            XLSX.writeFile(wb, 'report.xlsx');
+        }
+    };
+
     return (
         <Box sx={{ padding: 2, overflowX: 'auto' }}>
-            {/* Search and filter */}
-            <FilterBar searchTerm={searchTerm}
+            <FilterBar
+                searchTerm={searchTerm}
                 handleSearchChange={handleSearchChange}
                 selectedRole={selectedRole}
                 handleRoleFilterChange={handleRoleFilterChange}
                 roles={roles}
                 selectedFaculty={selectedFaculty}
                 handleFacultyFilterChange={handleFacultyFilterChange}
-                faculties={faculties} />
+                faculties={faculties}
+            />
 
-            <Button sx={{ mb: 2 }} variant="contained" color="success" onClick={() => setIsCreateUserModalOpen(true)}>
+            <Button sx={{ mb: 2, mr: 2 }} variant="contained" color="success" onClick={() => setIsCreateUserModalOpen(true)}>
                 Create New User
             </Button>
+            <Button sx={{ mb: 2 }} variant="contained" color="primary" onClick={fetchReportData}>
+                Create Report
+            </Button>
+
             {/* Create User Modal */}
-            <Modal open={isCreateUserModalOpen} onClose={() => setIsCreateUserModalOpen(false)}
-                sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            >
-                <Box
-                    sx={{ p: 4, bgcolor: 'background.paper', width: '400px', maxHeight: '90%', overflowY: 'auto', borderRadius: 2 }}>
+            <Modal open={isCreateUserModalOpen} onClose={() => setIsCreateUserModalOpen(false)} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Box sx={{ p: 4, bgcolor: 'background.paper', width: '400px', maxHeight: '90%', overflowY: 'auto', borderRadius: 2 }}>
                     <CreateUserForm onCreatedUser={handleUserCreated} onError={handleError} />
                 </Box>
             </Modal>
+
             {/* Update User Modal */}
-            <Modal
-                open={isUpdateUserModalOpen}
-                onClose={() => setIsUpdateUserModalOpen(false)}
-                sx={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}
-            >
+            <Modal open={isUpdateUserModalOpen} onClose={() => setIsUpdateUserModalOpen(false)} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Box sx={{ p: 4, bgcolor: 'background.paper', width: '400px', maxHeight: '90%', overflowY: 'auto', borderRadius: 2 }}>
                     {userToUpdate && (
                         <UpdateUserForm
@@ -178,17 +209,31 @@ const UserManagement = () => {
                     )}
                 </Box>
             </Modal>
-            {/* Loading indicator */}
+
+            {/* Report Dialog */}
+            <Dialog open={isReportDialogOpen} onClose={() => setIsReportDialogOpen(false)}>
+                <DialogTitle sx={{ alignSelf: 'center', fontWeight: 'bold' }}>Report Preview</DialogTitle>
+                <DialogContent>
+                    <ReportContent
+                        isReportLoading={isReportLoading}
+                        reportData={reportData}
+                        handleExportToExcel={handleExportToExcel}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setIsReportDialogOpen(false)}>Close</Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* User Table */}
             {loading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
                     <CircularProgress />
                 </Box>
             ) : (
-                <UserTable
-                    filteredUsers={filteredUsers}
-                    openUpdateUserModal={openUpdateUserModal}
-                    openDeleteConfirmation={openDeleteConfirmation} />
+                <UserTable filteredUsers={filteredUsers} openUpdateUserModal={openUpdateUserModal} openDeleteConfirmation={openDeleteConfirmation} />
             )}
+
             {/* Delete Confirmation Dialog */}
             <Dialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)}>
                 <DialogTitle>Confirm Deletion</DialogTitle>
@@ -202,8 +247,13 @@ const UserManagement = () => {
                     <Button color="error" onClick={handleDeleteUser}>Delete</Button>
                 </DialogActions>
             </Dialog>
-            {/* Snackbar for notifications */}
-            <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
+
+            {/* Snackbar */}
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={6000}
+                onClose={handleSnackbarClose}
+            >
                 <MuiAlert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
                     {snackbarMessage}
                 </MuiAlert>
