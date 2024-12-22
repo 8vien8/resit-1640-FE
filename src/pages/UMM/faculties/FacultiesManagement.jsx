@@ -82,8 +82,9 @@ const FacultiesManagement = () => {
             setFacultyToDelete(null);
             fetchData();
         } catch (err) {
+            const serverError = err.response?.data?.message || 'Error deleting faculty. Please try again.';
             console.error('Error details:', err.response?.data || err.message);
-            setError('Error deleting faculty. Please try again.');
+            setError(serverError);
         }
     };
 

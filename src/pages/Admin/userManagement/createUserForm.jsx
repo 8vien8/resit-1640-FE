@@ -48,7 +48,7 @@ const CreateUserForm = ({ onCreatedUser, onError }) => {
     }, [roleService, facultiesService, dataFetched]);
 
     const isValidEmail = (email) => {
-        const emailPattern = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@(gmail\.com|fpt\.edu\.vn)$/;
         return emailPattern.test(email);
     };
 

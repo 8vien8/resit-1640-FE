@@ -2,7 +2,6 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:5000/api/public-contributions';
 
-// Tạo mới Public Contribution
 export const createPublicContribution = async (data) => {
     try {
         const response = await axios.post(API_URL, data, {
@@ -16,7 +15,6 @@ export const createPublicContribution = async (data) => {
     }
 };
 
-// Lấy danh sách tất cả Public Contributions
 export const getPublicContributions = async () => {
     try {
         const response = await axios.get(API_URL);
@@ -26,7 +24,6 @@ export const getPublicContributions = async () => {
     }
 };
 
-// Lấy chi tiết một Public Contribution theo ID
 export const getPublicContributionById = async (id) => {
     try {
         const response = await axios.get(`${API_URL}/${id}`);
@@ -36,7 +33,6 @@ export const getPublicContributionById = async (id) => {
     }
 };
 
-// Cập nhật Public Contribution
 export const updatePublicContribution = async (id, data) => {
     try {
         const response = await axios.put(`${API_URL}/${id}`, data);
@@ -46,7 +42,6 @@ export const updatePublicContribution = async (id, data) => {
     }
 };
 
-// Xóa Public Contribution
 export const deletePublicContribution = async (id) => {
     try {
         const response = await axios.delete(`${API_URL}/${id}`);
