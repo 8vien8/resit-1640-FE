@@ -25,14 +25,26 @@ const UpdateContribution = ({ open, onClose, contribution, onUpdate }) => {
         if (contribution) {
             setTitle(contribution.title);
             setContent(contribution.content);
-            setFiles(contribution.files.map(file => (
-                new File([file.filePath], file.fileName, {
-                    type: file.fileType,
-                    lastModified: Date.now(),
-                })
-            )));
+            // Reset files
+            setFiles([]);
+
+            // Tải dữ liệu thực tế của từng tệp
+            const fetchFiles = async () => {
+                const fetchedFiles = await Promise.all(contribution.files.map(async (file) => {
+                    const response = await fetch(file.filePath); // Tải dữ liệu file
+                    const blob = await response.blob(); // Chuyển thành blob
+                    return new File([blob], file.fileName, {
+                        type: file.fileType,
+                        lastModified: Date.now(),
+                    });
+                }));
+                setFiles(fetchedFiles);
+            };
+
+            fetchFiles().catch(console.error);
         }
     }, [contribution]);
+
 
     const handleFileChange = (event) => {
         const selectedFiles = Array.from(event.target.files);
